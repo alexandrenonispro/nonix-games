@@ -3,6 +3,7 @@ import { useState, useCallback, useEffect, useRef } from 'react'
 import { BrowserRouter, Routes, Route, useNavigate, useParams, Navigate } from 'react-router-dom'
 import { AuthProvider, useAuth } from './auth/AuthContext'
 import { LoadingScreen } from './components/LoadingScreen'
+import { useLocation } from 'react-router-dom'
 import { AuthPage } from './auth/AuthPage'
 import { LobbyPage } from './lobby/LobbyPage'
 import { RoomPage } from './room/RoomPage'
@@ -35,6 +36,12 @@ function AppShell() {
   const navigate = useNavigate()
   const [initialRoomState, setInitialRoomState] = useState<InitialRoomState | null>(null)
   const [kickedMessage, setKickedMessage] = useState<string | null>(null)
+  const [reconnecting, setReconnecting] = useState(() => {
+    // Si l'URL contient /room/ ou /game/, on est en train de se reconnecter
+    return /\/(room|game)\/[A-Z0-9]+/.test(window.location.pathname) ||
+           !!localStorage.getItem(GAME_KEY) ||
+           !!sessionStorage.getItem(ROOM_KEY)
+  })
   const [gameInfo, setGameInfo] = useState<{ gameId: string; settings: any; code: string } | null>(null)
   const gameInfoRef = useRef<{ gameId: string; settings: any; code: string } | null>(null)
   const inGameRef = useRef(false)
@@ -42,6 +49,7 @@ function AppShell() {
   const { joinRoom, createRoom, leaveRoom, setReady, changeGame, sendMessage, startGame, kickPlayer } =
     useRoomSocket(token!, {
       onRoomState: ({ room, members, chat }) => {
+        setReconnecting(false)
         sessionStorage.setItem(ROOM_KEY, room.code)
         setInitialRoomState({ room, members, chat })
         const info = { gameId: room.gameId, settings: room.settings, code: room.code }
@@ -63,6 +71,7 @@ function AppShell() {
         }
       },
       onKicked: ({ reason }) => {
+        setReconnecting(false)
         sessionStorage.removeItem(ROOM_KEY)
         sessionStorage.setItem('gp_kicked', '1')
         localStorage.removeItem(GAME_KEY)
@@ -73,6 +82,7 @@ function AppShell() {
         setTimeout(() => setKickedMessage(null), 5000)
       },
       onRoomClosed: () => {
+        setReconnecting(false)
         sessionStorage.removeItem(ROOM_KEY)
         localStorage.removeItem(GAME_KEY)
         inGameRef.current = false
@@ -102,6 +112,13 @@ function AppShell() {
     inGameRef.current = true
     navigate(`/game/${code}`, { replace: true })
   }, [navigate])
+
+  // Clear reconnecting after 4s max si le socket ne répond pas
+  useEffect(() => {
+    if (!reconnecting) return
+    const t = setTimeout(() => setReconnecting(false), 4000)
+    return () => clearTimeout(t)
+  }, [])
 
   // Reconnexion après refresh — utilise aussi l'URL courante
   useEffect(() => {
@@ -139,7 +156,7 @@ function AppShell() {
       <Routes>
         {/* Lobby */}
         <Route path="/" element={
-          <LobbyPage
+          reconnecting ? <LoadingScreen /> : <LobbyPage
             onJoinRoom={joinRoom}
             onCreateRoom={createRoom}
             onLogout={logout}
