@@ -18,13 +18,14 @@ export interface PlayerState {
   score: number
   hasGuessed: boolean
   guessRank: number // 0 = pas encore deviné
+  socketId?: string
 }
 
 interface RoundState {
   round: number          // 1-based
   drawerId: string
   word: string
-  mask: string[]
+  mask: string
   timeLeft: number
   guessCount: number
   scores: Record<string, number>
