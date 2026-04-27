@@ -178,7 +178,7 @@ export class DrawnixGame {
       round: this.currentRound,
       drawerId,
       word,
-      mask: [...mask],
+      mask: mask,
       timeLeft: this.settings.timePerRound,
       guessCount: 0,
       scores: {},
