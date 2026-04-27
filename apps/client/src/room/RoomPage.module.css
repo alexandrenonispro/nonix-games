@@ -447,6 +447,9 @@
   padding: 4px 0;
 }
 
+/* ── Chat desktop — bulles (version originale) ── */
+.chatLineMobile { display: none; }
+
 .chatMsg {
   display: flex;
   align-items: flex-end;
@@ -497,6 +500,10 @@
   color: var(--text-muted);
   padding: 0 4px;
 }
+
+.chatLine {}
+.chatAuthorMe {}
+.chatContent {}
 
 /* ── Chat input ── */
 .chatInputWrap {
@@ -598,4 +605,182 @@
   background: rgba(248, 113, 113, 0.12);
   border-color: rgba(248, 113, 113, 0.3);
   color: #f87171;
+}
+
+.playersSection { display: flex; }
+.mobileAvatarStrip { display: none; }
+.mobileAvatarRow { display: flex; gap: 6px; flex-wrap: wrap; }
+.mobileReadyCount { display: none; }
+.readyProgressDesktop { display: flex; }
+.readyCountMobile { display: none; }
+.memberCountDesktop { display: inline; }
+.chatOnlineDesktop { display: inline; }
+
+/* ── Mobile ── */
+@media (max-width: 480px) {
+  /* Layout colonne pleine hauteur */
+  .layout {
+    grid-template-columns: 1fr;
+    height: 100dvh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Config (leftPanel) — 3/5 de la hauteur */
+  .leftPanel {
+    flex: 3;
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+    overflow-y: auto;
+    min-height: 0;
+  }
+
+  /* Chat — 2/5 de la hauteur */
+  .chatPanel {
+    flex: 2;
+    min-height: 0;
+    border-left: none;
+    border-top: 1px solid var(--border);
+  }
+
+  /* Room header compact */
+  .roomHeader { padding: 10px 14px; }
+  .roomHeaderTop { gap: 8px; }
+  .roomCode { font-size: 13px; }
+  .roomName { font-size: 15px; }
+
+  /* Cache la liste desktop, montre les avatars */
+  .playersSection { display: none; }
+
+  /* Strip avatars style Discord */
+  .mobileAvatarStrip {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 14px;
+    flex-wrap: wrap;
+    flex-shrink: 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .mobileAvatarItem {
+    position: relative;
+    flex-shrink: 0;
+  }
+
+  .mobileHostDot {
+    position: absolute;
+    bottom: -4px;
+    right: -4px;
+    font-size: 10px;
+    line-height: 1;
+  }
+
+  .mobileMeDot {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 10px;
+    height: 10px;
+    background: var(--accent);
+    border-radius: 50%;
+    border: 2px solid var(--bg-surface);
+  }
+
+  /* Ready count compact */
+  .readyCountDesktop { display: none; }
+  .readyCountMobile  { display: inline; font-size: 11px; }
+  .readyProgressLabel { font-size: 11px; }
+  .readyProgressBar { height: 3px; }
+
+  /* Cache compteur et "en ligne" */
+  .memberCountDesktop { display: none; }
+  .chatOnlineDesktop  { display: none; }
+
+  /* Chat header et messages compacts */
+  /* Chat header compact */
+  .chatHeader { padding: 8px 12px; }
+  .chatTitle  { font-size: 13px !important; font-weight: 700; letter-spacing: 0; }
+
+  /* Messages flat mobile — pseudo + message empilés */
+  .chatMessages { padding: 4px 10px; gap: 2px; }
+  /* Cache desktop bubbles */
+  .chatMsg      { display: none; }
+  /* Montre version mobile */
+  .chatLineMobile {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    padding: 2px 0;
+  }
+  .chatAuthorMobile {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text-primary);
+  }
+  .chatAuthorMobileMe { color: var(--accent); }
+  .chatContentMobile {
+    font-size: 11px;
+    color: var(--text-muted);
+    word-break: break-word;
+  }
+  .chatSystem { font-size: 10px; text-align: center; color: var(--text-muted); padding: 2px 0; }
+
+  /* Input compact */
+  .chatInputWrap { padding: 6px 10px; gap: 8px; }
+  .chatInput     { font-size: 12px; padding: 7px 10px; }
+
+  /* Avatar strip avec ready count */
+  .mobileAvatarStrip {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 14px;
+    border-bottom: 1px solid var(--border);
+  }
+  .mobileReadyCount {
+    display: inline;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--accent);
+    font-family: var(--font-mono);
+    flex-shrink: 0;
+    margin-left: 8px;
+  }
+
+  /* Cache barre de progression sur mobile */
+  .readyProgressDesktop { display: none !important; }
+
+  /* Settings compacts */
+  .panelSection { padding: 10px 14px; }
+  .sectionLabel { font-size: 10px; }
+
+  /* Members horizontaux */
+  .membersList {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 6px;
+    padding: 8px 14px;
+  }
+  .memberCard {
+    padding: 5px 10px;
+    flex-direction: row;
+    gap: 6px;
+    font-size: 12px;
+  }
+
+  /* Boutons */
+  .launchBtn { padding: 10px 14px; font-size: 14px; }
+  .readyBtn  { padding: 10px 14px; font-size: 14px; }
+
+  /* Actions en bas de la config */
+  .panelActions { padding: 10px 14px; }
+
+  /* Chat */
+  .chatMessages { padding: 6px 12px; }
+  .chatLine { font-size: 12px; }
+  .chatInputWrap { padding: 6px 10px; }
+  .chatInputWrap input { font-size: 13px; }
 }

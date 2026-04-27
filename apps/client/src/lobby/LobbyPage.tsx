@@ -106,6 +106,8 @@ export function LobbyPage({ onJoinRoom, onCreateRoom, onLogout, onViewProfile }:
 
   const [modal, setModal] = useState<'join' | 'create' | 'addFriend' | null>(null)
   const [pendingGameCode, setPendingGameCode] = useState<string | null>(() => localStorage.getItem('gp_game_code'))
+  const [mobileDrawer, setMobileDrawer] = useState(false)
+  const isMobile = typeof window !== 'undefined' && window.innerWidth <= 480
 
   const [onlinePlayers, setOnlinePlayers] = useState<Player[]>([])
   const [openRooms, setOpenRooms] = useState<RoomSummary[]>([])
@@ -182,6 +184,58 @@ export function LobbyPage({ onJoinRoom, onCreateRoom, onLogout, onViewProfile }:
 
   return (
     <div className={styles.layout}>
+
+      {/* ── Mobile drawer amis ── */}
+      {isMobile && mobileDrawer && (
+        <div className={styles.mobileOverlay} onClick={() => setMobileDrawer(false)} />
+      )}
+      <div className={styles.mobileDrawer} style={{ transform: isMobile && mobileDrawer ? 'translateX(0)' : 'translateX(-100%)' }}>
+        <div className={styles.mobileDrawerHeader}>
+          <span className={styles.sectionLabel}>Amis</span>
+          <div style={{ display: 'flex', gap: 8 }}>
+            <button className={styles.addFriendIconBtn} onClick={() => { setMobileDrawer(false); setModal('addFriend') }}>
+              <svg width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+            </button>
+            <button onClick={() => setMobileDrawer(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 18, color: 'var(--text-muted)' }}>✕</button>
+          </div>
+        </div>
+        <div className={styles.friendsList}>
+          {friends.filter((f) => onlinePlayers.some((p) => p.id === f.id)).map((f) => (
+            <div key={f.id} className={styles.friendRow} onClick={() => { setMobileDrawer(false); onViewProfile(f.id) }}>
+              <div className={styles.friendAvatarWrap}>
+                <Avatar username={f.username} avatarUrl={f.avatarUrl} size={30} />
+                <span className={styles.onlineDot} />
+              </div>
+              <div className={styles.friendInfo}>
+                <span className={styles.friendName}>{f.username}</span>
+                <span className={styles.friendStatus} style={{ color: 'var(--green)' }}>En ligne</span>
+              </div>
+            </div>
+          ))}
+          {friends.filter((f) => !onlinePlayers.some((p) => p.id === f.id)).map((f) => (
+            <div key={f.id} className={`${styles.friendRow} ${styles.friendRowOffline}`} onClick={() => { setMobileDrawer(false); onViewProfile(f.id) }}>
+              <Avatar username={f.username} avatarUrl={f.avatarUrl} size={30} />
+              <div className={styles.friendInfo}>
+                <span className={styles.friendName}>{f.username}</span>
+                <span className={styles.friendStatus}>Hors ligne</span>
+              </div>
+            </div>
+          ))}
+          {friends.length === 0 && (
+            <div style={{ padding: '16px 12px', fontSize: 12, color: 'var(--text-muted)', textAlign: 'center' }}>
+              Aucun ami pour l'instant.
+            </div>
+          )}
+        </div>
+        <div className={styles.sidebarBottom}>
+          <button className={styles.logoutBtn} onClick={onLogout}>
+            <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+              <path d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h6a2 2 0 012 2v1"/>
+            </svg>
+            Déconnexion
+          </button>
+        </div>
+      </div>
 
       {/* ── Navbar ── */}
       <nav className={styles.navbar}>
@@ -337,9 +391,7 @@ export function LobbyPage({ onJoinRoom, onCreateRoom, onLogout, onViewProfile }:
                   </div>
                   <div className={styles.roomMeta}>
                     <span className={styles.roomGame}>{meta.label}</span>
-                    <span className={styles.roomStatus} style={{ color: 'var(--green)' }}>
-                      En attente
-                    </span>
+                    <span className={styles.roomHost}>par {room.hostName ?? '?'}</span>
                   </div>
                 </div>
                 <div className={styles.roomCardBottom}>
@@ -402,6 +454,30 @@ export function LobbyPage({ onJoinRoom, onCreateRoom, onLogout, onViewProfile }:
           </div>
         </div>
       )}
+
+      {/* ── Mobile bottom bar ── */}
+      <div className={styles.mobileBottomBar}>
+        <button className={styles.mobileBottomBtn} onClick={() => setMobileDrawer(true)}>
+          <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+            <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/>
+            <path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/>
+          </svg>
+          <span>Amis</span>
+          {friends.filter(f => onlinePlayers.some(p => p.id === f.id)).length > 0 && (
+            <span className={styles.mobileBottomBadge}>{friends.filter(f => onlinePlayers.some(p => p.id === f.id)).length}</span>
+          )}
+        </button>
+        <button className={styles.mobileBottomBtnPrimary} onClick={() => setModal('create')}>
+          <svg width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+            <path d="M12 5v14M5 12h14"/>
+          </svg>
+        </button>
+        <button className={styles.mobileBottomBtn} onClick={() => onViewProfile(userId)}>
+          <Avatar username={username} avatarUrl={user?.avatarUrl} size={24} />
+          <span>Profil</span>
+        </button>
+      </div>
+
     </div>
   )
 }

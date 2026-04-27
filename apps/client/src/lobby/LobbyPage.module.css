@@ -288,6 +288,15 @@
   display: block;
 }
 
+.roomHost {
+  font-size: 12px;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .roomStatus {
   font-size: 17px;
   display: block;
@@ -567,4 +576,184 @@
   font-family: var(--font-body);
   text-decoration: underline;
   margin-top: 4px;
+}
+
+/* ── Mobile components cachés par défaut sur desktop ── */
+.mobileOverlay { display: none; }
+.mobileDrawer { display: none; }
+.mobileDrawerOpen { display: none; }
+.mobileBottomBar { display: none; }
+.mobileDrawerHeader { display: none; }
+.mobileBottomBtn { display: none; }
+.mobileBottomBtnPrimary { display: none; }
+.mobileBottomBadge { display: none; }
+
+/* ── Mobile ── */
+@media (max-width: 480px) {
+  /* Layout */
+  .layout {
+    grid-template-columns: 1fr;
+    grid-template-rows: 52px 1fr 64px;
+  }
+
+  /* Navbar compacte */
+  .navbar {
+    grid-column: 1;
+    padding: 0 14px;
+  }
+  .navBrand { font-size: 18px; gap: 7px; }
+  .navRight { gap: 8px; }
+  .navUserInfo { display: none; }
+  .navUser { gap: 6px; }
+
+  /* Sidebar desktop cachée */
+  .sidebar { display: none; }
+
+  /* Main */
+  .main {
+    grid-column: 1;
+    padding: 14px 14px 0;
+    gap: 12px;
+    overflow-y: auto;
+    padding-bottom: 80px; /* espace pour la bottom bar */
+  }
+
+  .mainHeader { flex-direction: column; align-items: flex-start; gap: 10px; }
+  .headerActions { width: 100%; display: flex; gap: 8px; }
+  .headerActions button { flex: 1; justify-content: center; }
+  .mainTitle { font-size: 28px; }
+  .mainSub { font-size: 12px; }
+
+  /* Rooms */
+  .roomsGrid { grid-template-columns: 1fr; gap: 8px; }
+  .roomCard  { padding: 12px 14px; }
+
+  /* Boutons */
+  .btnPrimary   { padding: 9px 14px; font-size: 13px; }
+  .btnSecondary { padding: 9px 14px; font-size: 13px; }
+
+  /* Modal bottom sheet */
+  .modalOverlay { padding: 0; align-items: flex-end; }
+  .modal {
+    width: 100vw;
+    max-width: 100vw;
+    max-height: calc(90dvh - 64px);
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+    padding: 20px 16px calc(32px + 64px);
+    gap: 16px;
+    overflow-y: auto;
+  }
+  .modalTitle { font-size: 20px; }
+  .gameGrid { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+  .gameOption { padding: 10px 6px; }
+
+  /* ── Mobile drawer ── */
+  .mobileOverlay {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.4);
+    z-index: 200;
+    animation: fadeIn .2s ease;
+  }
+
+  .mobileDrawer {
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: 80vw;
+    max-width: 300px;
+    background: var(--bg-surface);
+    box-shadow: var(--shadow-xl);
+    z-index: 201;
+    transform: translateX(-100%);
+    transition: transform .25s cubic-bezier(.4,0,.2,1);
+  }
+
+  .mobileDrawerOpen {
+    transform: translateX(0);
+  }
+
+  .mobileDrawerHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px;
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+
+  /* ── Bottom bar ── */
+  .mobileBottomBar {
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 64px;
+    background: var(--bg-surface);
+    border-top: 1px solid var(--border);
+    box-shadow: 0 -4px 16px rgba(26,46,43,0.08);
+    z-index: 100;
+    padding: 0 8px;
+  }
+
+  .mobileBottomBtn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--text-muted);
+    font-size: 10px;
+    font-family: var(--font-body);
+    font-weight: 500;
+    padding: 6px 16px;
+    border-radius: var(--radius-sm);
+    transition: color .15s;
+    position: relative;
+  }
+  .mobileBottomBtn:hover { color: var(--accent); }
+
+  .mobileBottomBtnPrimary {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    background: var(--accent);
+    border: none;
+    cursor: pointer;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: var(--shadow-accent);
+    transition: transform .15s;
+  }
+  .mobileBottomBtnPrimary:hover { transform: scale(1.08); }
+
+  .mobileBottomBadge {
+    position: absolute;
+    top: 2px;
+    right: 8px;
+    background: var(--accent);
+    color: white;
+    font-size: 9px;
+    font-weight: 700;
+    min-width: 16px;
+    height: 16px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 4px;
+  }
+
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 }

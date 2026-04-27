@@ -42,14 +42,24 @@ function ChatMsg({ msg, myId }: { msg: Message; myId: string }) {
   const isMe = msg.author?.id === myId
   const time = new Date(msg.sentAt).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })
   return (
-    <div className={`${styles.chatMsg} ${isMe ? styles.chatMsgMe : ''}`}>
-      {!isMe && <Avatar username={msg.author?.username ?? '?'} avatarUrl={msg.author?.avatarUrl} size={26} />}
-      <div className={styles.chatBubbleWrap}>
-        {!isMe && <span className={styles.chatAuthor}>{msg.author?.username}</span>}
-        <div className={`${styles.chatBubble} ${isMe ? styles.chatBubbleMe : ''}`}>{msg.content}</div>
-        <span className={styles.chatTime}>{time}</span>
+    <>
+      {/* Desktop — bulles */}
+      <div className={`${styles.chatMsg} ${isMe ? styles.chatMsgMe : ''}`}>
+        {!isMe && <Avatar username={msg.author?.username ?? '?'} avatarUrl={msg.author?.avatarUrl} size={26} />}
+        <div className={styles.chatBubbleWrap}>
+          {!isMe && <span className={styles.chatAuthor}>{msg.author?.username}</span>}
+          <div className={`${styles.chatBubble} ${isMe ? styles.chatBubbleMe : ''}`}>{msg.content}</div>
+          <span className={styles.chatTime}>{time}</span>
+        </div>
       </div>
-    </div>
+      {/* Mobile — flat */}
+      <div className={styles.chatLineMobile}>
+        <span className={`${styles.chatAuthorMobile} ${isMe ? styles.chatAuthorMobileMe : ''}`}>
+          {msg.author?.username}
+        </span>
+        <span className={styles.chatContentMobile}>{msg.content}</span>
+      </div>
+    </>
   )
 }
 
@@ -188,10 +198,11 @@ export function RoomPage({ token, initialState, onLeave, onGameStart, setReady, 
 
         <div className={styles.panelDivider} />
 
-        <div className={styles.panelSection} style={{ flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+        {/* Desktop : liste complète */}
+        <div className={`${styles.panelSection} ${styles.playersSection}`} style={{ flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
           <div className={styles.membersHeader}>
             <p className={styles.sectionLabel}>Joueurs</p>
-            <span className={styles.memberCount}>{members.length}/{room?.maxPlayers ?? '?'}</span>
+            <span className={`${styles.memberCount} ${styles.memberCountDesktop}`}>{members.length}/{room?.maxPlayers ?? '?'}</span>
           </div>
           {error && (
             <div style={{ background: 'rgba(248,113,113,0.1)', border: '1px solid rgba(248,113,113,0.3)', borderRadius: 6, padding: '8px 12px', fontSize: 12, color: '#f87171', marginBottom: 8 }}>
@@ -207,16 +218,31 @@ export function RoomPage({ token, initialState, onLeave, onGameStart, setReady, 
           </div>
         </div>
 
+        {/* Mobile : strip avatars + ready count */}
+        <div className={styles.mobileAvatarStrip}>
+          <div className={styles.mobileAvatarRow}>
+            {members.map((m) => (
+              <div key={m.id} className={styles.mobileAvatarItem} title={m.username}
+                style={{ opacity: (m.isReady || m.id === room?.hostId) ? 1 : 0.35, filter: (m.isReady || m.id === room?.hostId) ? 'none' : 'grayscale(1)' }}>
+                <Avatar username={m.username} avatarUrl={m.avatarUrl} size={34} />
+                {m.id === room?.hostId && <span className={styles.mobileHostDot}>👑</span>}
+                {isMe(m.id) && <span className={styles.mobileMeDot} />}
+              </div>
+            ))}
+          </div>
+          <span className={styles.mobileReadyCount}>{readyCount}/{members.length} ✓</span>
+        </div>
+
         <div className={styles.panelDivider} />
 
         <div className={styles.ctaSection}>
           {isHost ? (
             <div className={styles.hostCta}>
-              <div className={styles.readyProgress}>
+              <div className={`${styles.readyProgress} ${styles.readyProgressDesktop}`}>
                 <div className={styles.readyProgressBar}>
                   <div className={styles.readyProgressFill} style={{ width: `${members.length ? (readyCount / members.length) * 100 : 0}%` }} />
                 </div>
-                <span className={styles.readyProgressLabel}>{readyCount}/{members.length} prêts</span>
+                <span className={styles.readyProgressLabel}><span className={styles.readyCountDesktop}>{readyCount}/{members.length} prêts</span><span className={styles.readyCountMobile}>{readyCount}/{members.length} ✓</span></span>
               </div>
               <button className={styles.launchBtn} disabled={!allReady}
                 style={!allReady ? { opacity: 0.4, cursor: 'not-allowed' } : {}}
@@ -240,7 +266,7 @@ export function RoomPage({ token, initialState, onLeave, onGameStart, setReady, 
       <section className={styles.chatPanel}>
         <div className={styles.chatHeader}>
           <span className={styles.chatTitle}>Chat</span>
-          <span className={styles.chatOnline}>{members.length} en ligne</span>
+          <span className={`${styles.chatOnline} ${styles.chatOnlineDesktop}`}>{members.length} en ligne</span>
         </div>
         <div className={styles.chatMessages}>
           {chat.map((msg) => <ChatMsg key={msg.id} msg={msg} myId={userId} />)}

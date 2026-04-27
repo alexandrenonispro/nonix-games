@@ -46,24 +46,41 @@ export function DrawingCanvas({ isDrawer, onDraw, onClear, onCanvasUpdate, resto
   const drawing = useRef(false)
   const currentPoints = useRef<Point[]>([])
   const lastPos = useRef<Point | null>(null)
+  const history = useRef<ImageData[]>([])
 
   // ── Draw stroke ────────────────────────────────────────────────────────────
 
   const drawStroke = useCallback((stroke: Stroke & { _normalized?: boolean }, ctx: CanvasRenderingContext2D) => {
-    if (stroke.points.length < 2) return
+    if (stroke.points.length === 0) return
     const canvas = canvasRef.current
     const w = canvas?.width ?? 800
     const h = canvas?.height ?? 600
     const minDim = Math.min(w, h)
+    const lineWidth = stroke._normalized
+      ? stroke.size * minDim * (stroke.tool === 'eraser' ? 3 : 1)
+      : (stroke.tool === 'eraser' ? stroke.size * 3 : stroke.size)
+
+    // Point unique — cercle plein
+    if (stroke.points.length === 1) {
+      const p = stroke._normalized
+        ? { x: stroke.points[0]!.x * w, y: stroke.points[0]!.y * h }
+        : stroke.points[0]!
+      ctx.beginPath()
+      ctx.fillStyle = stroke.tool === 'eraser' ? '#ffffff' : stroke.color
+      ctx.arc(p.x, p.y, lineWidth / 2, 0, Math.PI * 2)
+      ctx.fill()
+      return
+    }
+    if (stroke.points.length < 2) return
     const pts = stroke._normalized
       ? stroke.points.map(p => ({ x: p.x * w, y: p.y * h }))
       : stroke.points
-    const lineWidth = stroke._normalized
+    const lineWidthStroke = stroke._normalized
       ? stroke.size * minDim * (stroke.tool === 'eraser' ? 3 : 1)
       : (stroke.tool === 'eraser' ? stroke.size * 3 : stroke.size)
     ctx.beginPath()
     ctx.strokeStyle = stroke.tool === 'eraser' ? '#ffffff' : stroke.color
-    ctx.lineWidth = lineWidth
+    ctx.lineWidth = lineWidthStroke
     ctx.lineCap = 'round'
     ctx.lineJoin = 'round'
     ctx.moveTo(pts[0]!.x, pts[0]!.y)
@@ -153,7 +170,8 @@ export function DrawingCanvas({ isDrawer, onDraw, onClear, onCanvasUpdate, resto
 
   const getPos = (e: React.MouseEvent | React.TouchEvent, canvas: HTMLCanvasElement): Point => {
     const rect = canvas.getBoundingClientRect()
-    const scaleX = canvas.width / rect.width, scaleY = canvas.height / rect.height
+    const scaleX = canvas.width / rect.width
+    const scaleY = canvas.height / rect.height
     if ('touches' in e) {
       const t = e.touches[0]!
       return { x: (t.clientX - rect.left) * scaleX, y: (t.clientY - rect.top) * scaleY }
@@ -171,6 +189,9 @@ export function DrawingCanvas({ isDrawer, onDraw, onClear, onCanvasUpdate, resto
 
     const pos = getPos(e, canvas)
     const x = Math.floor(pos.x), y = Math.floor(pos.y)
+    // Sauvegarder avant fill
+    history.current.push(ctx.getImageData(0, 0, canvas.width, canvas.height))
+    if (history.current.length > 30) history.current.shift()
     const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height)
 
     // Envoyer au worker (transfert zero-copy du buffer)
@@ -200,6 +221,10 @@ export function DrawingCanvas({ isDrawer, onDraw, onClear, onCanvasUpdate, resto
     if (!isDrawer || tool === 'fill') return
     const canvas = canvasRef.current
     if (!canvas) return
+    // Sauvegarder l'état avant de dessiner
+    const ctx = canvas.getContext('2d', { willReadFrequently: true })
+    if (ctx) history.current.push(ctx.getImageData(0, 0, canvas.width, canvas.height))
+    if (history.current.length > 30) history.current.shift() // max 30 étapes
     drawing.current = true
     const pos = getPos(e, canvas)
     currentPoints.current = [pos]
@@ -234,6 +259,17 @@ export function DrawingCanvas({ isDrawer, onDraw, onClear, onCanvasUpdate, resto
     if (!drawing.current) return
     drawing.current = false
     const canvas = canvasRef.current
+    const ctx = canvas?.getContext('2d')
+
+    // Si un seul point (simple clic) — dessiner un point
+    if (currentPoints.current.length === 1 && canvas && ctx) {
+      const p = currentPoints.current[0]!
+      ctx.beginPath()
+      ctx.fillStyle = tool === 'eraser' ? '#ffffff' : color
+      ctx.arc(p.x, p.y, (tool === 'eraser' ? size * 3 : size) / 2, 0, Math.PI * 2)
+      ctx.fill()
+    }
+
     if (currentPoints.current.length > 0 && canvas) {
       const w = canvas.width, h = canvas.height
       const norm = currentPoints.current.map(p => ({ x: p.x / w, y: p.y / h }))
@@ -245,6 +281,28 @@ export function DrawingCanvas({ isDrawer, onDraw, onClear, onCanvasUpdate, resto
       onCanvasUpdate(canvasRef.current.toDataURL('image/png', 0.5))
     }
   }, [color, size, tool, onDraw, onCanvasUpdate])
+
+  const handleUndo = useCallback(() => {
+    const canvas = canvasRef.current
+    const ctx = canvas?.getContext('2d')
+    if (!canvas || !ctx || history.current.length === 0) return
+    const prev = history.current.pop()!
+    ctx.putImageData(prev, 0, 0)
+    if (onCanvasUpdate) onCanvasUpdate(canvas.toDataURL('image/png', 0.5))
+  }, [onCanvasUpdate])
+
+  // ── Keyboard shortcut Ctrl+Z ──────────────────────────────────────────────
+  useEffect(() => {
+    if (!isDrawer) return
+    const onKey = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'z') {
+        e.preventDefault()
+        handleUndo()
+      }
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [isDrawer, handleUndo])
 
   const handleClear = () => {
     const canvas = canvasRef.current
@@ -311,6 +369,14 @@ export function DrawingCanvas({ isDrawer, onDraw, onClear, onCanvasUpdate, resto
           onClick={() => setTool('eraser')} title="Gomme">
           <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
             <path d="M20 20H7L3 16l10-10 7 7-3.5 3.5" /><path d="M6.5 17.5l4-4" />
+          </svg>
+        </button>
+
+        {/* Undo */}
+        <button className={styles.toolBtn} onClick={handleUndo} title="Annuler (Ctrl+Z)">
+          <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+            <path d="M3 10h10a8 8 0 010 16H3" strokeLinecap="round"/>
+            <path d="M3 10l4-4M3 10l4 4" strokeLinecap="round" strokeLinejoin="round"/>
           </svg>
         </button>
 

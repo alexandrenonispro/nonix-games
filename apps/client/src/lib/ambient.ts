@@ -19,7 +19,7 @@ export function startAmbient(volume = 0.3) {
 export function stopAmbient() {
   if (!audio) return
   audio.pause()
-  audio.currentTime = 0
+  // Ne pas remettre à 0 — reprend au même endroit au prochain play
 }
 
 export function setAmbientVolume(volume: number) {

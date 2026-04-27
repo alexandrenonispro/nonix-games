@@ -350,3 +350,12 @@
   color: var(--accent);
   background: var(--accent-light);
 }
+
+@media (max-width: 480px) {
+  .historyHeader { flex-direction: column; align-items: flex-start; gap: 6px; }
+  .historyMeta   { flex-wrap: wrap; gap: 8px; }
+  .turnBody      { flex-direction: column; }
+  .canvasImg     { width: 100%; height: auto; }
+  .filters       { gap: 8px; }
+  .dateFilters   { flex-direction: column; align-items: flex-start; }
+}

@@ -162,6 +162,7 @@ export function DrawnixGame({ token, settings, onLeave, isHost }: DrawnixGamePro
   const [disconnectedPlayers, setDisconnectedPlayers] = useState<Set<string>>(new Set())
   const [restoreCanvasData, setRestoreCanvasData] = useState<string | null>(null)
   const [ambientOn, setAmbientOn] = useState(false)
+  const [mobilePlayersOpen, setMobilePlayersOpen] = useState(false)
   const [ambientVolume, setAmbientVolumeState] = useState(0.3)
 
   const toggleAmbient = useCallback(() => {
@@ -411,6 +412,9 @@ export function DrawnixGame({ token, settings, onLeave, isHost }: DrawnixGamePro
       on('drawnix:reconnect-state' as any,        onReconnectState)
       on('drawnix:request-canvas-snapshot' as any, onRequestCanvasSnapshot)
       on('drawnix:canvas-snapshot' as any,         onCanvasSnapshot)
+      on('drawnix:canvas-live' as any, (d: any) => {
+        if (d.canvasData && !isDrawer) setRestoreCanvasData(d.canvasData)
+      })
       on('drawnix:player-disconnected' as any, onPlayerDisconnected)
       on('drawnix:reaction' as any,           onReaction)
       on('drawnix:player-reconnected' as any,  onPlayerReconnected)
@@ -436,6 +440,7 @@ export function DrawnixGame({ token, settings, onLeave, isHost }: DrawnixGamePro
       off('drawnix:reconnect-state' as any,        onReconnectState)
       off('drawnix:request-canvas-snapshot' as any, onRequestCanvasSnapshot)
       off('drawnix:canvas-snapshot' as any,         onCanvasSnapshot)
+      off('drawnix:canvas-live' as any, () => {})
       off('drawnix:player-disconnected' as any, onPlayerDisconnected)
       off('drawnix:reaction' as any,           onReaction)
       off('drawnix:player-reconnected' as any,  onPlayerReconnected)
@@ -538,6 +543,7 @@ export function DrawnixGame({ token, settings, onLeave, isHost }: DrawnixGamePro
         </div>
       )}
 
+      {/* ── Topbar desktop ── */}
       <div className={styles.topBar}>
         {isHost
           ? <button className={styles.leaveBtn} style={{ color: 'var(--red)', borderColor: 'var(--red)' }} onClick={handleCloseGame}>✕ Fermer la partie</button>
@@ -557,7 +563,6 @@ export function DrawnixGame({ token, settings, onLeave, isHost }: DrawnixGamePro
           {phase === 'waiting' && <span className={styles.waitingText}>La partie commence…</span>}
         </div>
         {turnState && <TimerRing timeLeft={turnState.timeLeft} total={settings.timePerRound} />}
-        {/* Contrôle musique ambiante */}
         <div className={styles.ambientControl}>
           <button className={`${styles.ambientBtn} ${ambientOn ? styles.ambientBtnOn : ''}`} onClick={toggleAmbient} title={ambientOn ? 'Couper la musique' : 'Musique ambiante'}>
             {ambientOn ? '🎵' : '🔇'}
@@ -569,6 +574,61 @@ export function DrawnixGame({ token, settings, onLeave, isHost }: DrawnixGamePro
             title={`Volume : ${Math.round(ambientVolume * 100)}%`}
           />
         </div>
+      </div>
+
+      {/* ── Topbar mobile ── */}
+      <div className={styles.mobileTopBar}>
+        {/* Ligne 1 : quitter | round | son */}
+        <div className={styles.mobileTopRow}>
+          {isHost
+            ? <button className={styles.mobileLeaveBtnRed} onClick={handleCloseGame}>✕</button>
+            : <button className={styles.mobileLeaveBtn} onClick={onLeave}>←</button>
+          }
+          <div className={styles.mobileTopCenter}>
+            {turnState && <span className={styles.mobileRoundBadge}>Round {turnState.round}/{turnState.totalRounds}</span>}
+            {phase === 'choosing' && <span className={styles.mobileWaitingText}>{waitingName === user?.username ? 'Choisissez…' : `${waitingName} choisit…`}</span>}
+            {phase === 'drawing' && turnState && <WordDisplay mask={turnState.mask} word={turnState.word} />}
+            {phase === 'turn-end' && turnEndWord && <span className={styles.mobileRevealWord}>«&nbsp;{turnEndWord}&nbsp;»</span>}
+            {phase === 'waiting' && <span className={styles.mobileWaitingText}>La partie commence…</span>}
+          </div>
+          <div className={styles.mobileTopRight}>
+            {/* Bouton joueurs */}
+            <button className={styles.mobilePlayersBtn} onClick={() => setMobilePlayersOpen(o => !o)}>
+              👥 {turnState?.players?.length ?? 0}
+            </button>
+            {/* Son — icône uniquement */}
+            <button className={`${styles.mobileAmbientBtn} ${ambientOn ? styles.ambientBtnOn : ''}`} onClick={toggleAmbient}>
+              {ambientOn ? '🎵' : '🔇'}
+            </button>
+          </div>
+        </div>
+
+        {/* Ligne 2 : barre de progression timer */}
+        {turnState && phase === 'drawing' && (
+          <div className={styles.mobileTimerBar}>
+            <div
+              className={`${styles.mobileTimerFill} ${turnState.timeLeft <= 10 ? styles.mobileTimerUrgent : ''}`}
+              style={{ width: `${(turnState.timeLeft / settings.timePerRound) * 100}%` }}
+            />
+          </div>
+        )}
+      </div>
+
+      {/* ── Drawer joueurs mobile ── */}
+      {mobilePlayersOpen && (
+        <div className={styles.mobilePlayersOverlay} onClick={() => setMobilePlayersOpen(false)} />
+      )}
+      <div className={`${styles.mobilePlayersDrawer} ${mobilePlayersOpen ? styles.mobilePlayersDrawerOpen : ''}`}>
+        <div className={styles.mobilePlayersHeader}>
+          <span>Joueurs</span>
+          <button onClick={() => setMobilePlayersOpen(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 18 }}>✕</button>
+        </div>
+        {(turnState?.players ?? []).map((p) => (
+          <div key={p.id} className={styles.mobilePlayerRow}>
+            <span className={styles.mobilePlayerName}>{p.username}{p.id === myId ? ' (moi)' : ''}{p.id === turnState?.drawerId ? ' ✏️' : ''}</span>
+            <span className={styles.mobilePlayerScore}>{p.score} pts</span>
+          </div>
+        ))}
       </div>
 
       {/* Emojis flottants */}

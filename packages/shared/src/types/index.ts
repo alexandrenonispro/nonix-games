@@ -39,6 +39,7 @@ export interface RoomSummary {
   playerCount: number
   maxPlayers: number
   status: RoomStatus
+  hostName?: string
 }
 
 export interface RoomMember extends Player {

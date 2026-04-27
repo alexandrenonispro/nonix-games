@@ -20,6 +20,7 @@ export interface ServerRoom {
   id: string
   code: string
   hostId: string
+  hostUsername: string
   gameId: GameId
   status: RoomStatus
   maxPlayers: number

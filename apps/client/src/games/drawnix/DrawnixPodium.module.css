@@ -128,3 +128,9 @@
   transition: opacity .15s;
 }
 .leaveBtn:hover { opacity: .8; }
+
+@media (max-width: 480px) {
+  .root    { padding: 16px; }
+  .podium  { flex-direction: column; gap: 12px; }
+  .card    { padding: 16px; }
+}

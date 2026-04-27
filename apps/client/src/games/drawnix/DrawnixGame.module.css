@@ -143,7 +143,7 @@
 /* Main area */
 .mainArea {
   display: grid;
-  grid-template-columns: 240px 1fr 300px;
+  grid-template-columns: 280px 1fr 360px;
   overflow: hidden;
 }
 
@@ -237,8 +237,11 @@
 
 /* Canvas wrap */
 .canvasWrap {
+  display: flex;
+  flex-direction: column;
   overflow: hidden;
   background: #fff;
+  min-height: 0;
 }
 
 /* Chat area */
@@ -522,3 +525,317 @@
   transition: transform .1s;
 }
 .ambientSlider::-webkit-slider-thumb:hover { transform: scale(1.3); }
+
+/* ── Mobile — colonne unique ──────────────────────────────────────────────────── */
+@media (max-width: 480px) {
+  .root {
+    grid-template-rows: 44px auto 1fr;
+    height: 100dvh; /* dynamic viewport height */
+  }
+
+  .topBar {
+    padding: 0 10px;
+    gap: 8px;
+    overflow-x: auto;
+    flex-wrap: nowrap;
+  }
+
+  .leaveBtn { font-size: 11px; padding: 4px 8px; flex-shrink: 0; }
+
+  .wordDisplay { gap: 6px; flex-shrink: 0; }
+  .wordLabel   { font-size: 10px; }
+  .wordFull    { font-size: 16px; }
+  .maskBlank   { width: 14px; }
+  .maskLetter  { font-size: 18px; min-width: 16px; }
+
+  /* Timer ring plus petit */
+  .timerWrap { width: 40px; height: 40px; }
+
+  /* Barre de réactions scrollable */
+  .reactionBar {
+    padding: 4px 8px;
+    overflow-x: auto;
+    justify-content: flex-start;
+  }
+  .reactionBtn { font-size: 18px; padding: 3px 6px; }
+
+  /* Layout colonne : sidebar | canvas | chat */
+  .mainArea {
+    display: flex;
+    flex-direction: column;
+    grid-template-columns: none;
+    overflow: hidden;
+  }
+
+  /* Sidebar horizontale compacte */
+  .sidebar {
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+    flex-direction: row;
+    align-items: center;
+    padding: 6px 10px;
+    gap: 8px;
+    overflow-x: auto;
+    flex-shrink: 0;
+    max-height: 60px;
+  }
+
+  .sidebarTitle { display: none; }
+
+  .playerRow {
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    min-width: 56px;
+    padding: 4px 6px;
+    font-size: 11px;
+    text-align: center;
+  }
+
+  .playerName { font-size: 10px; }
+  .playerScore { font-size: 10px; }
+  .drawerTag  { font-size: 12px; }
+  .meTag      { font-size: 9px; }
+
+  /* Canvas prend le max de place */
+  .canvasWrap {
+    flex: 1;
+    min-height: 0;
+  }
+
+  /* Chat compact en bas */
+  .chatArea {
+    border-left: none;
+    border-top: 1px solid var(--border);
+    max-height: 160px;
+    flex-shrink: 0;
+  }
+
+  .chatMessages { padding: 6px 10px; }
+  .chatLine     { font-size: 12px; }
+
+  .chatInput { padding: 6px 8px; }
+  .chatInput input { font-size: 13px; padding: 6px 10px; }
+  .chatInput button { height: 34px; padding: 0 10px; font-size: 15px; }
+
+  /* Toolbar verticale → scrollable horizontale */
+  .toolbar {
+    flex-direction: row;
+    padding: 6px 10px;
+    gap: 8px;
+    overflow-x: auto;
+    border-top: 1px solid var(--border);
+    border-left: none;
+    flex-shrink: 0;
+  }
+
+  .colors { flex-direction: row; gap: 4px; }
+  .colorBtn { width: 22px; height: 22px; }
+  .sizes { flex-direction: row; gap: 4px; }
+  .sizeBtn { width: 28px; height: 28px; }
+  .toolSep { width: 1px; height: 24px; background: var(--border); }
+  .toolBtn { padding: 4px 8px; font-size: 14px; }
+
+  /* Ambient control */
+  .ambientControl { flex-shrink: 0; }
+  .ambientSlider  { width: 50px; }
+
+  /* Overlay choosing */
+  .choosingCard { padding: 24px 32px; }
+  .choosingName { font-size: 18px; }
+}
+
+/* ── Mobile topbar (cachée par défaut) ───────────────────────────────────────── */
+.mobileTopBar { display: none; }
+.mobilePlayersOverlay { display: none; }
+.mobilePlayersDrawer { display: none; }
+
+@media (max-width: 480px) {
+  /* Cache topbar desktop */
+  .topBar { display: none; }
+
+  /* Mobile topbar */
+  .mobileTopBar {
+    display: flex;
+    flex-direction: column;
+    background: var(--bg-surface);
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+    z-index: 10;
+  }
+
+  .mobileTopRow {
+    display: flex;
+    align-items: center;
+    padding: 6px 10px;
+    gap: 6px;
+    height: 48px;
+  }
+
+  .mobileTopCenter {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    overflow: hidden;
+    min-width: 0;
+  }
+
+  .mobileRoundBadge {
+    font-size: 10px;
+    color: var(--text-muted);
+    font-family: var(--font-mono);
+    line-height: 1;
+  }
+
+  .mobileWaitingText {
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+
+  .mobileRevealWord {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--accent);
+  }
+
+  .mobileTopRight {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+  }
+
+  .mobileLeaveBtn, .mobileLeaveBtnRed {
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 5px 9px;
+    cursor: pointer;
+    font-size: 16px;
+    line-height: 1;
+    flex-shrink: 0;
+  }
+  .mobileLeaveBtnRed { color: var(--red); border-color: var(--red); }
+
+  .mobilePlayersBtn {
+    background: var(--bg-hover);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 4px 8px;
+    font-size: 12px;
+    cursor: pointer;
+    font-family: var(--font-body);
+    white-space: nowrap;
+  }
+
+  .mobileAmbientBtn {
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 4px 7px;
+    font-size: 14px;
+    cursor: pointer;
+    line-height: 1;
+  }
+
+  /* Barre de progression timer */
+  .mobileTimerBar {
+    height: 4px;
+    background: var(--border);
+    width: 100%;
+    flex-shrink: 0;
+    overflow: hidden;
+  }
+
+  .mobileTimerFill {
+    height: 100%;
+    background: var(--accent);
+    border-radius: 0 2px 2px 0;
+    transition: width .9s linear, background .3s;
+  }
+
+  .mobileTimerUrgent {
+    background: #ef4444;
+    animation: timerPulse .6s ease-in-out infinite;
+  }
+
+  @keyframes timerPulse {
+    0%, 100% { opacity: 1; }
+    50%       { opacity: .6; }
+  }
+
+  /* Drawer joueurs */
+  .mobilePlayersOverlay {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.35);
+    z-index: 50;
+  }
+
+  .mobilePlayersDrawer {
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 70vw;
+    max-width: 260px;
+    background: var(--bg-surface);
+    border-left: 1px solid var(--border);
+    z-index: 51;
+    transform: translateX(100%);
+    transition: transform .25s cubic-bezier(.4,0,.2,1);
+    overflow-y: auto;
+  }
+
+  .mobilePlayersDrawerOpen {
+    transform: translateX(0);
+  }
+
+  .mobilePlayersHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--border);
+    font-weight: 600;
+    font-size: 14px;
+    flex-shrink: 0;
+  }
+
+  .mobilePlayerRow {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--border);
+    font-size: 13px;
+  }
+
+  .mobilePlayerName { color: var(--text-primary); font-weight: 500; }
+  .mobilePlayerScore { color: var(--accent); font-family: var(--font-mono); font-weight: 700; }
+
+  /* 1. Cacher "Devinez le mot" label */
+  .wordLabel { display: none; }
+  .wordFull  { font-size: 14px; }
+  .maskBlank { width: 12px; height: 2px; }
+  .maskLetter { font-size: 16px; min-width: 14px; }
+
+  /* 2. Cacher la sidebar joueurs (on a le drawer) */
+  .sidebar { display: none !important; }
+
+  /* 3. Plus d'espace dans la topbar mobile */
+  .mobileTopBar { padding-bottom: 4px; }
+  .mobileTopRow { height: 52px; padding: 8px 12px; }
+  .mobileRoundBadge { margin-bottom: 2px; }
+
+  /* Canvas aspect ratio 4:3 fixe */
+  .canvasWrap {
+    position: relative;
+    flex: 1;
+    min-height: 0;
+  }
+}

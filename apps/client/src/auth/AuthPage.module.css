@@ -181,3 +181,16 @@
   padding: 0;
 }
 .switchBtn:hover { opacity: .8; }
+
+/* ── Mobile ── */
+@media (max-width: 480px) {
+  .card {
+    padding: 24px 20px;
+    border-radius: var(--radius-md);
+    box-shadow: none;
+    border: none;
+    min-height: 100vh;
+    justify-content: center;
+  }
+  .root { padding: 0; align-items: stretch; }
+}

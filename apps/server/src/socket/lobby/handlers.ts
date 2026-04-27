@@ -18,6 +18,7 @@ export function registerLobbyHandlers(lobby: Namespace, socket: Socket) {
         playerCount: r.members.size,
         maxPlayers: r.maxPlayers,
         status: r.status,
+        hostName: r.hostUsername ?? r.members.get(r.hostId)?.username ?? '?',
       }))
 
     const onlinePlayers = store.getLobbyPlayers().map((p) => ({

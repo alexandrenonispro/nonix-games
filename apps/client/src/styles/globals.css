@@ -75,3 +75,8 @@ body {
 ::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 3px; }
 
 input, button, textarea { font-family: var(--font-body); }
+
+/* ── Responsive — Mobile first ───────────────────────────────────────────────── */
+@media (max-width: 480px) {
+  html { font-size: 14px; }
+}

@@ -37,6 +37,7 @@ export function registerRoomHandlers(roomNS: Namespace, socket: Socket) {
       id: crypto.randomUUID(),
       code,
       hostId: user.id,
+      hostUsername: user.username,
       gameId,
       status: 'waiting' as const,
       maxPlayers,
@@ -59,7 +60,7 @@ export function registerRoomHandlers(roomNS: Namespace, socket: Socket) {
 
     // Notifier le lobby de la nouvelle room
     roomNS.server.of('/lobby').to('lobby-general').emit('lobby:room-opened' as any, {
-      code, gameId, playerCount: 1, maxPlayers, status: 'waiting',
+      code, gameId, playerCount: 1, maxPlayers, status: 'waiting', hostName: user.username,
     })
     console.log(`[room] ${user.username} created room ${code} (${gameId})`)
   })
@@ -332,6 +333,8 @@ export function registerRoomHandlers(roomNS: Namespace, socket: Socket) {
     if (action.type === 'drawnix:canvas-update') {
       const canvasData = (action.data as any).canvasData
       game.updateCanvasSnapshot(canvasData)
+      // Relayer le canvas à tous les spectateurs (pour undo en temps réel)
+      socket.to(room.code).emit('drawnix:canvas-live' as any, { canvasData })
       // Envoyer aux joueurs qui attendent le snapshot (reconnectants)
       const pendingSockets = game.getPendingSnapshotSockets()
       for (const sid of pendingSockets) {

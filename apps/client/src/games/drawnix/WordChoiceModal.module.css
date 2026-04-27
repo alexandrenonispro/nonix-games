@@ -71,3 +71,11 @@
   transform: translateY(-2px);
   box-shadow: 0 4px 17px rgba(124,111,247,0.15);
 }
+
+@media (max-width: 480px) {
+  .overlay { padding: 16px; }
+  .modal   { padding: 24px 16px; gap: 16px; }
+  .title   { font-size: 18px; }
+  .words   { flex-direction: column; gap: 8px; }
+  .wordBtn { padding: 14px; font-size: 16px; }
+}

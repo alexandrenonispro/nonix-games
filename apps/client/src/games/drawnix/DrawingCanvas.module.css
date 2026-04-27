@@ -94,3 +94,5 @@
 }
 .toolBtn:hover { background: var(--bg-hover); color: var(--text-primary); }
 .toolBtnActive { border-color: var(--accent); background: var(--accent-light); color: var(--accent); }
+
+
