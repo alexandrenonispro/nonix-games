@@ -1,0 +1,14 @@
+[phases.setup]
+nixPkgs = ["nodejs_20"]
+
+[phases.install]
+cmds = ["npm install"]
+
+[phases.build]
+cmds = [
+  "npm run build --workspace=packages/shared",
+  "npm run build --workspace=apps/server"
+]
+
+[start]
+cmd = "node apps/server/dist/index.js"
