@@ -3,7 +3,7 @@ import { useState, useCallback, useEffect, useRef } from 'react'
 import { BrowserRouter, Routes, Route, useNavigate, useParams, Navigate } from 'react-router-dom'
 import { AuthProvider, useAuth } from './auth/AuthContext'
 import { LoadingScreen } from './components/LoadingScreen'
-import { useLocation } from 'react-router-dom'
+import { NotFoundPage } from './components/NotFoundPage'
 import { AuthPage } from './auth/AuthPage'
 import { LobbyPage } from './lobby/LobbyPage'
 import { RoomPage } from './room/RoomPage'
@@ -194,8 +194,8 @@ function AppShell() {
             : <Navigate to="/" replace />
         } />
 
-        {/* Fallback */}
-        <Route path="*" element={<Navigate to="/" replace />} />
+        {/* 404 */}
+        <Route path="*" element={<NotFoundPage />} />
       </Routes>
     </>
   )
