@@ -97,7 +97,16 @@ export function DrawingCanvas({ isDrawer, onDraw, onClear, onCanvasUpdate, resto
         const w = canvas!.width, h = canvas!.height
         const x = action._normalized ? Math.floor(action.x * w) : action.x
         const y = action._normalized ? Math.floor(action.y * h) : action.y
-        floodFill(ctx, x, y, action.color)
+        const imageData = ctx.getImageData(0, 0, w, h)
+        const cloned = new ImageData(new Uint8ClampedArray(imageData.data), w, h)
+        const worker = getFillWorker()
+        worker.onmessage = (ev) => {
+          if (ev.data.changed) ctx.putImageData(ev.data.imageData, 0, 0)
+        }
+        worker.postMessage(
+          { imageData: cloned, width: w, height: h, startX: x, startY: y, fillColor: action.color },
+          [cloned.data.buffer]
+        )
       } else {
         drawStroke(action as Stroke, ctx)
       }
