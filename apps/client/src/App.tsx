@@ -103,13 +103,16 @@ function AppShell() {
     navigate(`/game/${code}`, { replace: true })
   }, [navigate])
 
-  // Reconnexion après refresh
+  // Reconnexion après refresh — utilise aussi l'URL courante
   useEffect(() => {
     const wasKicked = sessionStorage.getItem('gp_kicked')
     if (wasKicked) { sessionStorage.removeItem('gp_kicked'); return }
     const gameCode = localStorage.getItem(GAME_KEY)
     const roomCode = sessionStorage.getItem(ROOM_KEY)
-    const code = gameCode ?? roomCode
+    // Extraire le code depuis l'URL si présent (/room/CODE ou /game/CODE)
+    const urlMatch = window.location.pathname.match(/\/(room|game)\/([A-Z0-9]+)/)
+    const urlCode = urlMatch ? urlMatch[2] : null
+    const code = gameCode ?? urlCode ?? roomCode
     if (!code) return
     const socket = getRoomSocket(token!)
     if (!socket) return
