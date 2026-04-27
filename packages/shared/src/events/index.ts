@@ -10,9 +10,9 @@ import type {
   RoundResult,
   GameId,
   GameSettings,
-} from './types/index.js'
+} from '../types/index.js'
 
-import type { DrawStroke, GameAction, GamePayload } from './types/game-payloads.js'
+import type { DrawStroke, GameAction, GamePayload } from '../types/game-payloads.js'
 
 // ─── Error codes ──────────────────────────────────────────────────────────────
 
