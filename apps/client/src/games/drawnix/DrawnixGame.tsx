@@ -268,6 +268,7 @@ export function DrawnixGame({ token, settings, onLeave, isHost }: DrawnixGamePro
       }
 
       const onHint = (d: any) => {
+        sounds.hint()
         setTurnState((ts) => ts ? { ...ts, mask: d.mask } : ts)
         addChat({ type: 'system', content: '💡 Indice révélé !' })
       }

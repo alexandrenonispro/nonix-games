@@ -109,6 +109,29 @@ export const sounds = {
     })
   },
 
+  // Indice révélé
+  hint: () => {
+    const ac = getCtx()
+    // Deux notes douces ascendantes — style "ding ding"
+    const notes = [
+      { freq: 784, t: 0.0, dur: 0.12 },
+      { freq: 1046, t: 0.14, dur: 0.18 },
+    ]
+    notes.forEach(({ freq, t, dur }) => {
+      const osc = ac.createOscillator()
+      const gain = ac.createGain()
+      osc.connect(gain)
+      gain.connect(ac.destination)
+      osc.type = 'sine'
+      osc.frequency.value = freq
+      gain.gain.setValueAtTime(0, ac.currentTime + t)
+      gain.gain.linearRampToValueAtTime(0.12, ac.currentTime + t + 0.02)
+      gain.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + t + dur)
+      osc.start(ac.currentTime + t)
+      osc.stop(ac.currentTime + t + dur + 0.05)
+    })
+  },
+
   // Pop léger pour les réactions emoji
   reactionPop: () => {
     const ac = getCtx()

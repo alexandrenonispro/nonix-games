@@ -186,6 +186,7 @@ export class DrawnixGame {
     }
 
     this.currentCanvasData = ''
+    this.roundScores = {} // Reset scores du tour courant
     this.currentGuessers = []
     // Reset hasGuessed pour tous
     this.players.forEach((p) => { p.hasGuessed = false; p.guessRank = 0 })
