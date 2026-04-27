@@ -11,13 +11,12 @@ export function AuthPage() {
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
 
-  // Login fields
-  const [loginEmail, setLoginEmail] = useState('')
+  // Login fields — pseudo uniquement
+  const [loginUsername, setLoginUsername] = useState('')
   const [loginPassword, setLoginPassword] = useState('')
 
-  // Register fields
+  // Register fields — pseudo + mot de passe (email auto-généré côté serveur)
   const [regUsername, setRegUsername] = useState('')
-  const [regEmail, setRegEmail] = useState('')
   const [regPassword, setRegPassword] = useState('')
   const [regConfirm, setRegConfirm] = useState('')
 
@@ -26,7 +25,7 @@ export function AuthPage() {
     setError(null)
     setLoading(true)
     try {
-      await login(loginEmail, loginPassword)
+      await login(loginUsername, loginPassword)
     } catch (err: any) {
       setError(err.message)
     } finally {
@@ -43,7 +42,8 @@ export function AuthPage() {
     }
     setLoading(true)
     try {
-      await register(regUsername, regEmail, regPassword)
+      // Email auto-généré — pas saisi par l'utilisateur
+      await register(regUsername, regPassword)
     } catch (err: any) {
       setError(err.message)
     } finally {
@@ -90,13 +90,13 @@ export function AuthPage() {
         {tab === 'login' && (
           <form className={styles.form} onSubmit={handleLogin}>
             <div className={styles.field}>
-              <label className={styles.label}>Email</label>
+              <label className={styles.label}>Pseudo</label>
               <input
                 className={styles.input}
-                type="email"
-                placeholder="toi@exemple.com"
-                value={loginEmail}
-                onChange={(e) => setLoginEmail(e.target.value)}
+                type="text"
+                placeholder="MonPseudo"
+                value={loginUsername}
+                onChange={(e) => setLoginUsername(e.target.value)}
                 required
                 autoFocus
               />
@@ -133,17 +133,6 @@ export function AuthPage() {
                 minLength={3}
                 maxLength={20}
                 autoFocus
-              />
-            </div>
-            <div className={styles.field}>
-              <label className={styles.label}>Email</label>
-              <input
-                className={styles.input}
-                type="email"
-                placeholder="toi@exemple.com"
-                value={regEmail}
-                onChange={(e) => setRegEmail(e.target.value)}
-                required
               />
             </div>
             <div className={styles.field}>

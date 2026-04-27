@@ -7,8 +7,8 @@ interface AuthCtx {
   token: string | null
   user: AuthUser | null
   isLoading: boolean
-  login: (email: string, password: string) => Promise<void>
-  register: (username: string, email: string, password: string) => Promise<void>
+  login: (username: string, password: string) => Promise<void>
+  register: (username: string, password: string) => Promise<void>
   logout: () => void
   refreshUser: () => Promise<void>
 }
@@ -43,8 +43,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     ]).finally(() => setIsLoading(false))
   }, [])
 
-  const login = async (email: string, password: string) => {
-    const { token: t, user: u } = await authApi.login(email, password)
+  const login = async (username: string, password: string) => {
+    const { token: t, user: u } = await authApi.login(username, password)
     localStorage.setItem(TOKEN_KEY, t)
     // Marquer comme nouvelle session pour afficher l'animation au prochain montage
     sessionStorage.removeItem('gp_loaded')
@@ -55,8 +55,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setIsLoading(false)
   }
 
-  const register = async (username: string, email: string, password: string) => {
-    const { token: t, user: u } = await authApi.register(username, email, password)
+  const register = async (username: string, password: string) => {
+    const { token: t, user: u } = await authApi.register(username, password)
     localStorage.setItem(TOKEN_KEY, t)
     sessionStorage.removeItem('gp_loaded')
     setIsLoading(true)

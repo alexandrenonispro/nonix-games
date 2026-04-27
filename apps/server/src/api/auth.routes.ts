@@ -6,20 +6,18 @@ import { signToken } from '../lib/jwt.js'
 
 export const authRouter = Router()
 
-// ─── Validation schemas ───────────────────────────────────────────────────────
-
 const registerSchema = z.object({
   username: z
     .string()
     .min(3, 'Minimum 3 caractères')
     .max(20, 'Maximum 20 caractères')
     .regex(/^[a-zA-Z0-9_-]+$/, 'Lettres, chiffres, _ et - uniquement'),
-  email: z.string().email('Email invalide'),
+  email: z.string().email().optional(),   // gardé en BDD mais optionnel
   password: z.string().min(6, 'Minimum 6 caractères'),
 })
 
 const loginSchema = z.object({
-  email: z.string().email(),
+  username: z.string().min(1),
   password: z.string().min(1),
 })
 
@@ -36,23 +34,24 @@ authRouter.post('/register', async (req, res) => {
   const { username, email, password } = parsed.data
 
   try {
-    // Vérifier unicité
     const existing = await prisma.user.findFirst({
-      where: { OR: [{ email }, { username }] },
+      where: { username },
     })
 
     if (existing) {
-      const field = existing.email === email ? 'email' : 'username'
       return res.status(409).json({
-        error: field === 'email' ? 'Cet email est déjà utilisé' : 'Ce pseudo est déjà pris',
-        field,
+        error: 'Ce pseudo est déjà pris',
+        field: 'username',
       })
     }
 
     const hashedPassword = await bcrypt.hash(password, 10)
 
+    // Email stocké en BDD (fourni par le client ou auto-généré)
+    const finalEmail = email ?? `${username.toLowerCase()}@nonix.local`
+
     const user = await prisma.user.create({
-      data: { username, email, password: hashedPassword },
+      data: { username, email: finalEmail, password: hashedPassword },
       select: { id: true, username: true, email: true, level: true, rank: true, avatarUrl: true },
     })
 
@@ -73,21 +72,21 @@ authRouter.post('/login', async (req, res) => {
     return res.status(400).json({ error: 'Données invalides' })
   }
 
-  const { email, password } = parsed.data
+  const { username, password } = parsed.data
 
   try {
     const user = await prisma.user.findUnique({
-      where: { email },
+      where: { username },
       select: { id: true, username: true, email: true, password: true, level: true, rank: true, avatarUrl: true },
     })
 
     if (!user) {
-      return res.status(401).json({ error: 'Email ou mot de passe incorrect' })
+      return res.status(401).json({ error: 'Pseudo ou mot de passe incorrect' })
     }
 
     const valid = await bcrypt.compare(password, user.password)
     if (!valid) {
-      return res.status(401).json({ error: 'Email ou mot de passe incorrect' })
+      return res.status(401).json({ error: 'Pseudo ou mot de passe incorrect' })
     }
 
     const { password: _, ...userWithoutPassword } = user

@@ -27,11 +27,11 @@ async function post(path: string, body: unknown): Promise<AuthResponse> {
 }
 
 export const authApi = {
-  register: (username: string, email: string, password: string) =>
-    post('/api/auth/register', { username, email, password }),
+  register: (username: string, password: string) =>
+    post('/api/auth/register', { username, password }),
 
-  login: (email: string, password: string) =>
-    post('/api/auth/login', { email, password }),
+  login: (username: string, password: string) =>
+    post('/api/auth/login', { username, password }),
 
   me: async (token: string): Promise<AuthUser> => {
     const res = await fetch(`${API}/api/auth/me`, {
