@@ -1,0 +1,138 @@
+.root {
+  height: 100vh;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-base);
+}
+
+.scene {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  position: relative;
+}
+
+/* ── Dé ────────────────────────────────────────────────────────────────────── */
+
+.dice {
+  position: relative;
+  width: 80px;
+  height: 80px;
+  animation: diceRoll 2s cubic-bezier(.36,.07,.19,.97) infinite;
+}
+
+.diceSvg {
+  width: 80px;
+  height: 80px;
+  filter: drop-shadow(0 8px 20px rgba(61,158,138,0.35));
+}
+
+.diceCircle {
+  animation: pulse 2s ease-in-out infinite;
+}
+
+/* Chaque point apparaît avec un léger délai */
+.dot1 { animation: dotPop 2s ease-in-out infinite 0.0s; }
+.dot2 { animation: dotPop 2s ease-in-out infinite 0.1s; }
+.dot3 { animation: dotPop 2s ease-in-out infinite 0.2s; }
+.dot4 { animation: dotPop 2s ease-in-out infinite 0.3s; }
+.dot5 { animation: dotPop 2s ease-in-out infinite 0.4s; }
+
+@keyframes diceRoll {
+  0%   { transform: rotate(0deg) scale(1); }
+  15%  { transform: rotate(-18deg) scale(1.08); }
+  30%  { transform: rotate(18deg) scale(1.05); }
+  45%  { transform: rotate(-10deg) scale(1.03); }
+  60%  { transform: rotate(6deg) scale(1.01); }
+  75%  { transform: rotate(-3deg) scale(1); }
+  100% { transform: rotate(0deg) scale(1); }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: .85; }
+}
+
+@keyframes dotPop {
+  0%, 40%, 100% { transform: scale(1); opacity: 1; }
+  20%            { transform: scale(1.4); opacity: .8; }
+}
+
+/* ── Traînée ────────────────────────────────────────────────────────────────── */
+
+.trail {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+.trailDot {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--accent);
+  animation: orbit 2s linear infinite;
+  animation-delay: calc(var(--i) * -0.5s);
+  opacity: 0;
+}
+
+@keyframes orbit {
+  0%   { transform: rotate(0deg) translateX(60px) scale(0.3); opacity: 0; }
+  10%  { opacity: .6; }
+  50%  { opacity: .2; }
+  100% { transform: rotate(360deg) translateX(60px) scale(0); opacity: 0; }
+}
+
+/* ── Textes ─────────────────────────────────────────────────────────────────── */
+
+.brand {
+  font-family: var(--font-brand);
+  font-size: 28px;
+  color: var(--text-primary);
+  letter-spacing: .01em;
+  animation: fadeUp .5s ease both;
+}
+
+.message {
+  font-size: 13px;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  animation: fadeUp .5s ease .1s both;
+  letter-spacing: .03em;
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Barre ──────────────────────────────────────────────────────────────────── */
+
+.bar {
+  width: 160px;
+  height: 3px;
+  background: var(--border);
+  border-radius: 99px;
+  overflow: hidden;
+  animation: fadeUp .5s ease .2s both;
+}
+
+.barFill {
+  height: 100%;
+  width: 45%;
+  background: var(--accent);
+  border-radius: 99px;
+  animation: slide 1.8s ease-in-out infinite;
+}
+
+@keyframes slide {
+  0%   { transform: translateX(-100%); }
+  50%  { transform: translateX(200%); }
+  100% { transform: translateX(200%); }
+}

@@ -1,0 +1,570 @@
+/* ── Layout ── */
+.layout {
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  grid-template-rows: 62px 1fr;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* ── Navbar ── */
+.navbar {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 30px;
+  background: var(--bg-surface);
+  border-bottom: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
+  position: relative;
+  z-index: 10;
+}
+
+.navBrand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--font-brand);
+  font-size: 22px;
+  font-weight: 400;
+  letter-spacing: 0.01em;
+  color: var(--text-primary);
+}
+
+.navRight {
+  display: flex;
+  align-items: center;
+  gap: 30px;
+}
+
+.navUser {
+  display: flex;
+  align-items: center;
+  gap: 17px;
+}
+
+.navUserInfo {
+  text-align: right;
+}
+
+.navUsername {
+  display: block;
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--text-primary);
+  line-height: 1.2;
+}
+
+.navLevel {
+  font-size: 17px;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+}
+
+/* ── Sidebar ── */
+.sidebar {
+  background: var(--bg-surface);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  grid-row: 2;
+  box-shadow: var(--shadow-sm);
+}
+
+
+
+/* Section header */
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 30px 30px 17px;
+  flex-shrink: 0;
+}
+
+.sectionLabel {
+  font-size: 17px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .1em;
+  color: var(--text-muted);
+}
+
+.onlineBadge {
+  font-size: 17px;
+  font-family: var(--font-mono);
+  color: var(--green);
+  background: var(--green-light);
+  border-radius: 30px;
+  padding: 1px 8px;
+}
+
+/* Friends list */
+.friendsList {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0 17px;
+}
+
+.friendRow {
+  display: flex;
+  align-items: center;
+  gap: 17px;
+  padding: 8px 17px;
+  border-radius: var(--radius-md);
+  transition: background .12s;
+  cursor: default;
+}
+.friendRow:hover { background: var(--bg-hover); }
+
+.friendAvatarWrap { position: relative; flex-shrink: 0; }
+
+.onlineDot {
+  position: absolute;
+  bottom: 0; right: 0;
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--green);
+  border: 2px solid var(--bg-surface);
+}
+
+.friendInfo { flex: 1; min-width: 0; }
+
+.friendName {
+  display: block;
+  font-size: 17px;
+  font-weight: 500;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.friendStatus {
+  font-size: 17px;
+  color: var(--text-muted);
+  display: block;
+  margin-top: 1px;
+}
+
+.friendStatusActive { color: var(--accent) !important; }
+
+.joinFriendBtn {
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--accent);
+  background: var(--accent-light);
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: 3px 17px;
+  cursor: pointer;
+  transition: background .12s;
+  white-space: nowrap;
+}
+.joinFriendBtn:hover { background: var(--pastel-mint); }
+
+/* Sidebar bottom */
+.sidebarBottom {
+  padding: 30px 30px;
+  border-top: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.logoutBtn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-sm);
+  color: var(--text-muted);
+  font-size: 17px;
+  font-weight: 500;
+  padding: 8px 17px;
+  cursor: pointer;
+  transition: all .15s;
+  font-family: var(--font-body);
+}
+.logoutBtn:hover {
+  border-color: var(--red);
+  color: var(--red);
+  background: var(--red-light);
+}
+
+/* ── Main ── */
+.main {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  padding: 40px 40px 30px;
+  gap: 30px;
+  grid-row: 2;
+}
+
+.mainHeader {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  flex-shrink: 0;
+}
+
+.mainTitleGroup {}
+
+
+.mainTitle {
+  font-family: var(--font-display);
+  font-size: 40px;
+  font-weight: 600;
+  letter-spacing: -0.04em;
+  color: var(--text-primary);
+  line-height: 1;
+}
+
+.mainSub {
+  font-size: 17px;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  margin-top: 6px;
+}
+
+.headerActions {
+  display: flex;
+  gap: 8px;
+}
+
+/* ── Rooms grid ── */
+.roomsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 17px;
+  overflow-y: auto;
+  align-content: start;
+  padding-bottom: 8px;
+}
+
+.roomCard {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 30px;
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+  transition: border-color .15s, box-shadow .15s;
+  cursor: default;
+}
+.roomCard:hover {
+  border-color: var(--border-strong);
+  box-shadow: 0 2px 17px rgba(0,0,0,0.05);
+}
+
+.roomCardTop {
+  display: flex;
+  align-items: flex-start;
+  gap: 17px;
+}
+
+.roomGameIcon {
+  width: 42px;
+  height: 42px;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 30px;
+  flex-shrink: 0;
+}
+
+.roomMeta { flex: 1; min-width: 0; }
+
+.roomGame {
+  font-size: 30px;
+  font-weight: 600;
+  color: var(--text-primary);
+  display: block;
+}
+
+.roomStatus {
+  font-size: 17px;
+  display: block;
+  margin-top: 2px;
+}
+
+.roomCode {
+  font-family: var(--font-mono);
+  font-size: 17px;
+  color: var(--text-muted);
+  background: var(--bg-base);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 3px 7px;
+  flex-shrink: 0;
+  align-self: flex-start;
+}
+
+.roomCardBottom {
+  display: flex;
+  align-items: center;
+  gap: 17px;
+}
+
+.playerBar {
+  flex: 1;
+  height: 3px;
+  background: var(--bg-base);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.playerBarFill {
+  height: 100%;
+  border-radius: 2px;
+  transition: width .3s;
+  opacity: 0.6;
+}
+
+.playerCount {
+  font-size: 17px;
+  font-family: var(--font-mono);
+  color: var(--text-muted);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* ── Buttons ── */
+.btnPrimary {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--text-primary);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: 10px 30px;
+  font-size: 17px;
+  font-weight: 500;
+  font-family: var(--font-body);
+  cursor: pointer;
+  transition: opacity .15s, transform .1s;
+  white-space: nowrap;
+}
+.btnPrimary:hover { opacity: .85; transform: translateY(-1px); }
+.btnPrimary:active { transform: translateY(0); }
+
+.btnSecondary {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--bg-surface);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  padding: 10px 30px;
+  font-size: 17px;
+  font-weight: 500;
+  font-family: var(--font-body);
+  cursor: pointer;
+  transition: all .15s;
+  white-space: nowrap;
+}
+.btnSecondary:hover { border-color: var(--text-muted); color: var(--text-primary); }
+
+.btnSmall {
+  font-size: 17px;
+  font-weight: 600;
+  background: var(--text-primary);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: 5px 17px;
+  cursor: pointer;
+  transition: opacity .15s;
+  font-family: var(--font-body);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.btnSmall:hover:not(:disabled) { opacity: .8; }
+.btnSmall:disabled { opacity: .3; cursor: not-allowed; }
+
+/* ── Avatar ── */
+.avatar {
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  flex-shrink: 0;
+  user-select: none;
+  letter-spacing: -0.01em;
+}
+
+/* ── Modal ── */
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(28, 25, 23, 0.4);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  animation: fadeIn .15s ease;
+}
+
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+.modal {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  padding: 40px;
+  width: 520px;
+  max-width: calc(100vw - 32px);
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  box-shadow: var(--shadow-xl);
+  animation: slideUp .18s ease;
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(17px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.modalTitle {
+  font-family: var(--font-display);
+  font-size: 30px;
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  color: var(--text-primary);
+}
+
+.modalLabel {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  color: var(--text-muted);
+  margin-bottom: -4px;
+}
+
+.codeInput {
+  background: var(--bg-base);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+  font-size: 30px;
+  font-weight: 500;
+  letter-spacing: .2em;
+  text-align: center;
+  padding: 30px;
+  width: 100%;
+  outline: none;
+  transition: border-color .15s;
+}
+.codeInput:focus { border-color: var(--accent); }
+.codeInput::placeholder { color: var(--text-faint); font-size: 17px; letter-spacing: .05em; }
+
+.gameGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.gameOption {
+  background: var(--bg-base);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 14px 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: all .12s;
+  font-family: var(--font-body);
+}
+.gameOption:hover { border-color: var(--border-strong); background: var(--bg-hover); }
+.gameOptionActive { border-color: var(--accent) !important; background: var(--accent-light) !important; }
+
+.gameEmoji { font-size: 22px; line-height: 1; }
+.gameLabel { font-size: 13px; font-weight: 600; color: var(--text-primary); }
+
+.slider {
+  width: 100%;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+
+.modalActions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+/* ── Empty state ── */
+.emptyState {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 60px;
+  color: var(--text-muted);
+}
+.emptyState span {
+  font-family: var(--font-display);
+  font-size: 30px;
+  font-weight: 400;
+  color: var(--text-secondary);
+}
+.emptyState p { font-size: 17px; }
+
+/* ── Error ── */
+.errorBanner {
+  background: var(--red-light);
+  border: 1px solid #fca5a5;
+  border-radius: var(--radius-sm);
+  padding: 17px 30px;
+  font-size: 17px;
+  color: var(--red);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+/* ── Friends sidebar additions ── */
+.friendRowOffline { opacity: 0.5; }
+.friendRow { cursor: pointer; }
+
+.addFriendIconBtn {
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text-muted);
+  padding: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  transition: all .15s;
+}
+.addFriendIconBtn:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-light); }
+
+.addFriendTextBtn {
+  background: none;
+  border: none;
+  color: var(--accent);
+  font-size: 17px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: var(--font-body);
+  text-decoration: underline;
+  margin-top: 4px;
+}

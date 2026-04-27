@@ -1,0 +1,253 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String    @id @default(uuid())
+  username     String    @unique
+  email        String    @unique
+  avatarUrl    String?   @map("avatar_url")
+  password     String    @default("")
+  xp           Int       @default(0)
+  level        Int       @default(1)
+  rank         String    @default("Rookie")
+  lastLoginAt  DateTime? @map("last_login_at")
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+
+  sentFriendships      Friendship[]     @relation("Requester")
+  receivedFriendships  Friendship[]     @relation("Receiver")
+  userAchievements     UserAchievement[]
+  userStats            UserStat[]
+  hostedRooms          Room[]
+  roomMembers          RoomMember[]
+  gameResults          GameResult[]
+  chatMessages         ChatMessage[]
+  sentNotifications    Notification[]   @relation("NotifSender")
+  receivedNotifications Notification[]  @relation("NotifReceiver")
+
+  @@map("users")
+}
+
+model Friendship {
+  id          String           @id @default(uuid())
+  requesterId String           @map("requester_id")
+  receiverId  String           @map("receiver_id")
+  status      FriendshipStatus @default(PENDING)
+  createdAt   DateTime         @default(now()) @map("created_at")
+  updatedAt   DateTime         @updatedAt @map("updated_at")
+
+  requester User @relation("Requester", fields: [requesterId], references: [id])
+  receiver  User @relation("Receiver", fields: [receiverId], references: [id])
+
+  @@unique([requesterId, receiverId])
+  @@map("friendships")
+}
+
+model Notification {
+  id         String           @id @default(uuid())
+  receiverId String           @map("receiver_id")
+  senderId   String?          @map("sender_id")
+  type       NotificationType
+  data       Json             @default("{}")
+  read       Boolean          @default(false)
+  createdAt  DateTime         @default(now()) @map("created_at")
+
+  receiver User  @relation("NotifReceiver", fields: [receiverId], references: [id])
+  sender   User? @relation("NotifSender", fields: [senderId], references: [id])
+
+  @@map("notifications")
+}
+
+model Achievement {
+  id          String            @id @default(uuid())
+  key         String            @unique
+  name        String
+  description String
+  iconUrl     String            @map("icon_url")
+  rarity      AchievementRarity
+  gameId      String?           @map("game_id")
+  isGlobal    Boolean           @default(false) @map("is_global")
+
+  userAchievements UserAchievement[]
+
+  @@map("achievements")
+}
+
+model UserAchievement {
+  id            String   @id @default(uuid())
+  userId        String   @map("user_id")
+  achievementId String   @map("achievement_id")
+  unlockedAt    DateTime @default(now()) @map("unlocked_at")
+  notified      Boolean  @default(false)
+
+  user        User        @relation(fields: [userId], references: [id])
+  achievement Achievement @relation(fields: [achievementId], references: [id])
+
+  @@unique([userId, achievementId])
+  @@map("user_achievements")
+}
+
+model UserStat {
+  id          String @id @default(uuid())
+  userId      String @map("user_id")
+  gameId      String @map("game_id")
+  gamesPlayed Int    @default(0) @map("games_played")
+  gamesWon    Int    @default(0) @map("games_won")
+  totalScore  Int    @default(0) @map("total_score")
+  bestScore   Int    @default(0) @map("best_score")
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@unique([userId, gameId])
+  @@map("user_stats")
+}
+
+model Room {
+  id         String     @id @default(uuid())
+  code       String     @unique
+  hostId     String     @map("host_id")
+  gameId     String     @map("game_id")
+  status     RoomStatus @default(WAITING)
+  maxPlayers Int        @map("max_players")
+  settings   Json
+  createdAt  DateTime   @default(now()) @map("created_at")
+
+  host         User          @relation(fields: [hostId], references: [id])
+  members      RoomMember[]
+  gameSessions GameSession[]
+  chatMessages ChatMessage[]
+
+  @@map("rooms")
+}
+
+model RoomMember {
+  id       String   @id @default(uuid())
+  roomId   String   @map("room_id")
+  userId   String   @map("user_id")
+  isReady  Boolean  @default(false) @map("is_ready")
+  joinedAt DateTime @default(now()) @map("joined_at")
+
+  room Room @relation(fields: [roomId], references: [id])
+  user User @relation(fields: [userId], references: [id])
+
+  @@unique([roomId, userId])
+  @@map("room_members")
+}
+
+model GameSession {
+  id        String        @id @default(uuid())
+  roomId    String        @map("room_id")
+  gameId    String        @map("game_id")
+  status    SessionStatus @default(IN_PROGRESS)
+  config    Json
+  startedAt DateTime      @default(now()) @map("started_at")
+  endedAt   DateTime?     @map("ended_at")
+
+  room    Room         @relation(fields: [roomId], references: [id])
+  results GameResult[]
+
+  @@map("game_sessions")
+}
+
+model GameResult {
+  id        String @id @default(uuid())
+  sessionId String @map("session_id")
+  userId    String @map("user_id")
+  score     Int    @default(0)
+  rank      Int    @default(0)
+  extraData Json?  @map("extra_data")
+
+  session GameSession @relation(fields: [sessionId], references: [id])
+  user    User        @relation(fields: [userId], references: [id])
+
+  @@map("game_results")
+}
+
+model ChatMessage {
+  id      String      @id @default(uuid())
+  roomId  String      @map("room_id")
+  userId  String?     @map("user_id")
+  content String
+  type    MessageType @default(TEXT)
+  sentAt  DateTime    @default(now()) @map("sent_at")
+
+  room Room  @relation(fields: [roomId], references: [id])
+  user User? @relation(fields: [userId], references: [id])
+
+  @@map("chat_messages")
+}
+
+
+model DrawnixHistory {
+  id          String   @id @default(uuid())
+  roomCode    String   @map("room_code")
+  startedAt   DateTime @map("started_at")
+  endedAt     DateTime @default(now()) @map("ended_at")
+  settings    Json     // rounds, timePerRound, wordCount
+  rankings    Json     // [{ userId, username, avatarUrl, score, rank }]
+  turns       DrawnixTurn[]
+
+  @@map("drawnix_history")
+}
+
+model DrawnixTurn {
+  id          String   @id @default(uuid())
+  historyId   String   @map("history_id")
+  round       Int
+  turnIndex   Int      @map("turn_index")
+  drawerId    String   @map("drawer_id")
+  drawerName  String   @map("drawer_name")
+  word        String
+  canvasData  String   @map("canvas_data") // base64 PNG snapshot
+  guessers    Json     // [{ userId, username, points, rank }]
+
+  history DrawnixHistory @relation(fields: [historyId], references: [id])
+
+  @@map("drawnix_turns")
+}
+
+// ─── Enums ────────────────────────────────────────────────────────────────────
+
+enum FriendshipStatus {
+  PENDING
+  ACCEPTED
+  DECLINED
+  BLOCKED
+}
+
+enum NotificationType {
+  FRIEND_REQUEST
+  FRIEND_ACCEPTED
+}
+
+enum AchievementRarity {
+  COMMON
+  RARE
+  EPIC
+  LEGENDARY
+}
+
+enum RoomStatus {
+  WAITING
+  STARTING
+  IN_GAME
+  FINISHED
+}
+
+enum SessionStatus {
+  IN_PROGRESS
+  FINISHED
+  ABORTED
+}
+
+enum MessageType {
+  TEXT
+  SYSTEM
+  GUESS
+}

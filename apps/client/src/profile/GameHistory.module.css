@@ -1,0 +1,352 @@
+.root {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* History card */
+.historyCard {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.historyHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  cursor: pointer;
+  transition: background .12s;
+  gap: 12px;
+}
+.historyHeader:hover { background: var(--bg-hover); }
+
+.historyLeft {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.historyGame {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+  white-space: nowrap;
+}
+
+.historyDate {
+  font-size: 12px;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  white-space: nowrap;
+}
+
+.historyMeta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.myRank {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-primary);
+  white-space: nowrap;
+}
+
+.historyDuration, .historyPlayers {
+  font-size: 12px;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  white-space: nowrap;
+}
+
+.historyToggle {
+  font-size: 10px;
+  color: var(--text-muted);
+}
+
+/* History body */
+.historyBody {
+  border-top: 1px solid var(--border);
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* Podium */
+.podium {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.podiumRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 5px 10px;
+  border-radius: var(--radius-sm);
+}
+
+.podiumRowMe {
+  background: var(--accent-light);
+  border: 1px solid var(--accent-border);
+}
+
+.podiumMedal { font-size: 16px; min-width: 22px; }
+
+.podiumName {
+  flex: 1;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.podiumScore {
+  font-size: 12px;
+  font-family: var(--font-mono);
+  color: var(--text-secondary);
+}
+
+/* Turns */
+.turns { display: flex; flex-direction: column; gap: 6px; }
+
+.turnsTitle {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  color: var(--text-muted);
+  margin-bottom: 2px;
+}
+
+/* Turn card */
+.turnCard {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+
+.turnHeader {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  cursor: pointer;
+  background: var(--bg-base);
+  transition: background .12s;
+}
+.turnHeader:hover { background: var(--bg-hover); }
+
+.turnRound {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  color: var(--text-muted);
+  min-width: 46px;
+}
+
+.turnDrawer {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+.turnWord {
+  flex: 1;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-primary);
+  font-style: italic;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.turnGuessCount {
+  font-size: 11px;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  white-space: nowrap;
+}
+
+.turnToggle {
+  font-size: 10px;
+  color: var(--text-muted);
+}
+
+/* Turn body */
+.turnBody {
+  padding: 10px 12px;
+  display: flex;
+  gap: 14px;
+  border-top: 1px solid var(--border);
+  background: var(--bg-surface);
+}
+
+.canvasImg {
+  width: 150px;
+  height: 112px;
+  object-fit: contain;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: #fff;
+  flex-shrink: 0;
+}
+
+.guesserList {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.guesserRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+}
+
+.guesserRank {
+  font-family: var(--font-mono);
+  color: var(--text-muted);
+  min-width: 22px;
+}
+
+.guesserName {
+  flex: 1;
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
+.guesserPts {
+  color: #16a34a;
+  font-weight: 600;
+  font-family: var(--font-mono);
+}
+
+.noGuess {
+  font-size: 12px;
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+/* ── Filters ── */
+.filters {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px 16px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+}
+
+.filterGroup {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.filterBtn {
+  padding: 4px 12px;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  background: var(--bg-base);
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 500;
+  font-family: var(--font-body);
+  cursor: pointer;
+  transition: all .12s;
+  white-space: nowrap;
+}
+.filterBtn:hover { border-color: var(--accent-border); color: var(--accent); }
+.filterBtnActive {
+  background: var(--accent-light);
+  border-color: var(--accent);
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.dateFilters {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.dateField {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.dateLabel {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.dateInput {
+  background: var(--bg-base);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 4px 8px;
+  font-size: 12px;
+  font-family: var(--font-body);
+  color: var(--text-primary);
+  outline: none;
+  cursor: pointer;
+  transition: border-color .15s;
+}
+.dateInput:focus { border-color: var(--accent); }
+
+.clearBtn {
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 4px 10px;
+  font-size: 11px;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-family: var(--font-body);
+  transition: all .12s;
+}
+.clearBtn:hover { border-color: var(--red); color: var(--red); }
+
+.count {
+  font-size: 12px;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+}
+
+.loadMoreBtn {
+  width: 100%;
+  padding: 10px;
+  border: 1.5px dashed var(--border);
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 500;
+  font-family: var(--font-body);
+  cursor: pointer;
+  transition: all .15s;
+}
+.loadMoreBtn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: var(--accent-light);
+}

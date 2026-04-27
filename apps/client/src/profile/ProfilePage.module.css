@@ -1,0 +1,392 @@
+.root {
+  height: 100vh;
+  overflow-y: auto;
+  background: var(--bg-base);
+}
+
+.loading {
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  font-size: 17px;
+}
+
+.spinner {
+  width: 30px; height: 30px;
+  border: 2px solid var(--border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin .7s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg) } }
+
+/* Header */
+.header {
+  padding: 30px 40px 0;
+}
+
+.backBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text-secondary);
+  font-size: 17px;
+  font-weight: 500;
+  padding: 7px 30px;
+  cursor: pointer;
+  font-family: var(--font-body);
+  transition: all .15s;
+}
+.backBtn:hover { border-color: var(--border-strong); color: var(--text-primary); }
+
+/* Content */
+.content {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 30px 40px 60px;
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+}
+
+/* Hero */
+.hero {
+  display: flex;
+  align-items: flex-start;
+  gap: 30px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  padding: 30px;
+}
+
+.avatarImg {
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.avatarInitials {
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.heroInfo { flex: 1; min-width: 0; }
+
+.heroName {
+  font-family: var(--font-display);
+  font-size: 30px;
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  color: var(--text-primary);
+  line-height: 1;
+  margin-bottom: 8px;
+}
+
+.heroMeta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 30px;
+}
+
+.heroBadge {
+  font-size: 17px;
+  font-weight: 600;
+  background: var(--accent-light);
+  color: var(--accent);
+  border-radius: 30px;
+  padding: 2px 17px;
+}
+
+.heroSep { color: var(--text-faint); }
+
+.heroLevel {
+  font-size: 17px;
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+}
+
+.xpRow {
+  display: flex;
+  align-items: center;
+  gap: 17px;
+}
+
+.xpBar {
+  flex: 1;
+  height: 6px;
+  background: var(--bg-base);
+  border-radius: 3px;
+  overflow: hidden;
+  max-width: 200px;
+}
+
+.xpFill {
+  height: 100%;
+  background: var(--accent);
+  border-radius: 3px;
+  transition: width .4s ease;
+  opacity: .7;
+}
+
+.xpLabel {
+  font-size: 17px;
+  font-family: var(--font-mono);
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.heroActions { flex-shrink: 0; }
+
+.addFriendBtn {
+  background: var(--text-primary);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: 10px 30px;
+  font-size: 17px;
+  font-weight: 500;
+  font-family: var(--font-body);
+  cursor: pointer;
+  transition: opacity .15s;
+  white-space: nowrap;
+}
+.addFriendBtn:hover:not(:disabled) { opacity: .8; }
+.addFriendBtn:disabled { opacity: .5; cursor: not-allowed; }
+
+.friendTag {
+  font-size: 17px;
+  font-weight: 600;
+  color: #16a34a;
+  background: #dcfce7;
+  border-radius: 30px;
+  padding: 5px 17px;
+}
+
+.pendingTag {
+  font-size: 17px;
+  color: var(--text-muted);
+  background: var(--bg-base);
+  border: 1px solid var(--border);
+  border-radius: 30px;
+  padding: 5px 17px;
+}
+
+/* Dates */
+.datesRow {
+  display: flex;
+  gap: 30px;
+}
+
+.dateItem {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.dateLabel {
+  font-size: 17px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  color: var(--text-muted);
+}
+
+.dateValue {
+  font-size: 17px;
+  color: var(--text-secondary);
+}
+
+/* Section */
+.section {}
+
+.sectionTitle {
+  font-family: var(--font-display);
+  font-size: 30px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--text-primary);
+  margin-bottom: 30px;
+  display: flex;
+  align-items: center;
+  gap: 17px;
+}
+
+.achievementCount {
+  font-size: 17px;
+  font-weight: 600;
+  background: var(--bg-base);
+  border: 1px solid var(--border);
+  border-radius: 30px;
+  padding: 1px 8px;
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+}
+
+/* Stats */
+.statsGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 17px;
+}
+
+.statCard {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 30px 30px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.statValue {
+  font-family: var(--font-display);
+  font-size: 30px;
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  color: var(--text-primary);
+  line-height: 1;
+}
+
+.statLabel {
+  font-size: 17px;
+  color: var(--text-muted);
+}
+
+/* Game stats */
+.gameStatsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 17px;
+}
+
+.gameStatCard {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 30px;
+  display: flex;
+  flex-direction: column;
+  gap: 17px;
+}
+
+.gameStatHeader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.gameStatEmoji { font-size: 30px; }
+
+.gameStatName {
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.gameStatRows {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.gameStatRow {
+  display: flex;
+  justify-content: space-between;
+  font-size: 17px;
+  color: var(--text-secondary);
+}
+.gameStatRow strong { color: var(--text-primary); font-weight: 600; }
+
+/* Achievements */
+.achievementsGrid {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.achievementCard {
+  display: flex;
+  align-items: center;
+  gap: 30px;
+  padding: 30px 30px;
+  border-radius: var(--radius-md);
+  border: 1px solid transparent;
+}
+
+.achievementIcon { font-size: 30px; flex-shrink: 0; }
+
+.achievementInfo { flex: 1; min-width: 0; }
+
+.achievementName {
+  display: block;
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.achievementDesc {
+  display: block;
+  font-size: 17px;
+  color: var(--text-secondary);
+  margin-top: 1px;
+}
+
+.achievementRarity {
+  font-size: 17px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  display: block;
+  margin-top: 4px;
+}
+
+.emptyText {
+  font-size: 17px;
+  color: var(--text-muted);
+}
+
+/* ── Avatar upload ── */
+.avatarWrap {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.avatarEditBtn {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: var(--text-primary);
+  color: #fff;
+  border: 2px solid var(--bg-surface);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: opacity .15s, transform .15s;
+}
+.avatarEditBtn:hover:not(:disabled) { opacity: .85; transform: scale(1.08); }
+.avatarEditBtn:disabled { opacity: .5; cursor: not-allowed; }
+
+.uploadSpinner {
+  width: 17px;
+  height: 17px;
+  border: 2px solid rgba(255,255,255,0.3);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin .6s linear infinite;
+}

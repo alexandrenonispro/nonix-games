@@ -1,0 +1,77 @@
+@import url('https://fonts.googleapis.com/css2?family=Comfortaa:wght@700&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&family=Lilita+One&display=swap');
+
+:root {
+  /* Base */
+  --bg-base:     #f0f4f3;
+  --bg-surface:  #ffffff;
+  --bg-elevated: #f7faf9;
+  --bg-hover:    #eaf2f0;
+
+  /* Accent — vert bleuté pastel */
+  --accent:        #3d9e8a;
+  --accent-light:  #e0f5f1;
+  --accent-border: #9dd8cd;
+  --accent-dim:    rgba(61,158,138,0.08);
+
+  /* Pastels */
+  --pastel-mint:     #b8ede5;
+  --pastel-sky:      #bae6fd;
+  --pastel-lavender: #ddd6fe;
+  --pastel-peach:    #fed7aa;
+  --pastel-rose:     #fecdd3;
+  --pastel-yellow:   #fef08a;
+
+  /* Texte */
+  --text-primary:   #1a2e2b;
+  --text-secondary: #4a6b65;
+  --text-muted:     #7a9e99;
+  --text-faint:     #b8d0cc;
+
+  /* Bordures */
+  --border:        #d4e8e4;
+  --border-strong: #b8d4cf;
+
+  /* Statuts */
+  --green:       #16a34a;
+  --green-light: #dcfce7;
+  --red:         #dc2626;
+  --red-light:   #fee2e2;
+
+  /* Typographie */
+  --font-display: 'Comfortaa', cursive;
+  --font-body:    'DM Sans', sans-serif;
+  --font-mono:    'DM Mono', monospace;
+  --font-brand:   'Lilita One', cursive;
+
+  /* Géométrie */
+  --radius-sm:  8px;
+  --radius-md:  14px;
+  --radius-lg:  20px;
+  --radius-xl:  28px;
+
+  /* Ombres — profondeur */
+  --shadow-sm:  0 1px 3px rgba(26,46,43,0.06), 0 1px 2px rgba(26,46,43,0.04);
+  --shadow-md:  0 4px 12px rgba(26,46,43,0.08), 0 2px 4px rgba(26,46,43,0.05);
+  --shadow-lg:  0 8px 24px rgba(26,46,43,0.10), 0 4px 8px rgba(26,46,43,0.06);
+  --shadow-xl:  0 20px 48px rgba(26,46,43,0.12), 0 8px 16px rgba(26,46,43,0.07);
+  --shadow-accent: 0 4px 14px rgba(61,158,138,0.25);
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body, #root { height: 100%; }
+html { font-size: 16px; }
+
+body {
+  background: var(--bg-base);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  font-size: 1rem;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 3px; }
+
+input, button, textarea { font-family: var(--font-body); }
