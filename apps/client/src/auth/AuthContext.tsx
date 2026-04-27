@@ -24,23 +24,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Délai uniquement si c'est la première visite de la session (login ou nouvel onglet)
   useEffect(() => {
     const stored = localStorage.getItem(TOKEN_KEY)
-    const isFirstVisit = !sessionStorage.getItem('gp_loaded')
-    sessionStorage.setItem('gp_loaded', '1')
-    const minDelay = isFirstVisit
-      ? new Promise(r => setTimeout(r, 2500))
-      : Promise.resolve()
+    if (!stored) { setIsLoading(false); return }
 
-    if (!stored) {
-      minDelay.then(() => setIsLoading(false))
-      return
-    }
-
-    Promise.all([
-      authApi.me(stored)
-        .then((u) => { setUser(u); setToken(stored) })
-        .catch(() => { localStorage.removeItem(TOKEN_KEY); setToken(null) }),
-      minDelay,
-    ]).finally(() => setIsLoading(false))
+    authApi.me(stored)
+      .then((u) => { setUser(u); setToken(stored) })
+      .catch(() => { localStorage.removeItem(TOKEN_KEY); setToken(null) })
+      .finally(() => setIsLoading(false))
   }, [])
 
   const login = async (username: string, password: string) => {
