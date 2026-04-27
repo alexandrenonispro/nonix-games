@@ -37,10 +37,8 @@ function AppShell() {
   const [initialRoomState, setInitialRoomState] = useState<InitialRoomState | null>(null)
   const [kickedMessage, setKickedMessage] = useState<string | null>(null)
   const [reconnecting, setReconnecting] = useState(() => {
-    // Si l'URL contient /room/ ou /game/, on est en train de se reconnecter
-    return /\/(room|game)\/[A-Z0-9]+/.test(window.location.pathname) ||
-           !!localStorage.getItem(GAME_KEY) ||
-           !!sessionStorage.getItem(ROOM_KEY)
+    // Seulement si l'URL contient /room/ ou /game/
+    return /\/(room|game)\/[A-Z0-9]+/.test(window.location.pathname)
   })
   const [gameInfo, setGameInfo] = useState<{ gameId: string; settings: any; code: string } | null>(null)
   const gameInfoRef = useRef<{ gameId: string; settings: any; code: string } | null>(null)
