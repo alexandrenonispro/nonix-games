@@ -1,3 +1,3 @@
-export * from './types/index.js'
-export * from './types/game-payloads.js'
-export * from './events/index.js'
+export * from './types/index'
+export * from './types/game-payloads'
+export * from './events/index'

@@ -4,8 +4,11 @@
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
     "outDir": "./dist",
-    "rootDir": "./src",
-    "lib": ["ES2022"]
+    "rootDir": "../../",
+    "lib": ["ES2022"],
+    "paths": {
+      "@game-platform/shared": ["../../packages/shared/src/index.ts"]
+    }
   },
-  "include": ["src"]
+  "include": ["src", "../../packages/shared/src"]
 }
