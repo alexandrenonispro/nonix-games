@@ -1,4 +1,4 @@
-import type { Player } from './index.js'
+import type { Player } from './index'
 
 // ─── Generic action type ──────────────────────────────────────────────────────
 
