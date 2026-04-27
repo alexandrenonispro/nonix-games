@@ -10,7 +10,8 @@
     "strictNullChecks": false,
     "noUncheckedIndexedAccess": false,
     "exactOptionalPropertyTypes": false,
-    "noImplicitReturns": false
+    "noImplicitReturns": false,
+    "noImplicitAny": false
   },
   "include": ["src"]
 }
