@@ -4,6 +4,9 @@ import type { GameId, Player, RoomSummary, GameSettings } from '@game-platform/s
 import { useLobbySocket } from '../socket/useLobbySocket'
 import { usersApi, type FriendUser } from '../lib/usersApi'
 import { NotifBell } from '../components/NotifBell'
+import { DMWindow } from '../dm/DMWindow'
+import { useDMs } from '../socket/useDMs'
+import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../auth/AuthContext'
 import styles from './LobbyPage.module.css'
 import { DiceLogo } from '../components/DiceLogo'
@@ -108,6 +111,8 @@ export function LobbyPage({ onJoinRoom, onCreateRoom, onLogout, onViewProfile }:
   const [pendingGameCode, setPendingGameCode] = useState<string | null>(() => localStorage.getItem('gp_game_code'))
   const [mobileDrawer, setMobileDrawer] = useState(false)
   const isMobile = typeof window !== 'undefined' && window.innerWidth <= 480
+  const navigate = useNavigate()
+  const { convs, windows, totalUnread, openDM, closeDM, sendMessage, loadConversation } = useDMs(token ?? '', userId)
 
   const [onlinePlayers, setOnlinePlayers] = useState<Player[]>([])
   const [openRooms, setOpenRooms] = useState<RoomSummary[]>([])
@@ -201,23 +206,45 @@ export function LobbyPage({ onJoinRoom, onCreateRoom, onLogout, onViewProfile }:
         </div>
         <div className={styles.friendsList}>
           {friends.filter((f) => onlinePlayers.some((p) => p.id === f.id)).map((f) => (
-            <div key={f.id} className={styles.friendRow} onClick={() => { setMobileDrawer(false); onViewProfile(f.id) }}>
+            <div key={f.id} className={styles.friendRow}>
               <div className={styles.friendAvatarWrap}>
                 <Avatar username={f.username} avatarUrl={f.avatarUrl} size={30} />
                 <span className={styles.onlineDot} />
               </div>
-              <div className={styles.friendInfo}>
+              <div className={styles.friendInfo} style={{ flex: 1 }}>
                 <span className={styles.friendName}>{f.username}</span>
                 <span className={styles.friendStatus} style={{ color: 'var(--green)' }}>En ligne</span>
+              </div>
+              <div className={styles.friendActions}>
+                <button className={styles.friendIconBtn} style={{ position: 'relative' }} onClick={() => openDM(f.id, { username: f.username, avatarUrl: f.avatarUrl })} title="Message privé">
+                  <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" strokeLinejoin="round"/></svg>
+                  {(convs.get(f.id)?.unreadCount ?? 0) > 0 && (
+                    <span className={styles.friendUnreadDot}>{convs.get(f.id)!.unreadCount}</span>
+                  )}
+                </button>
+                <button className={styles.friendIconBtn} onClick={() => onViewProfile(f.id)} title="Voir le profil">
+                  <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                </button>
               </div>
             </div>
           ))}
           {friends.filter((f) => !onlinePlayers.some((p) => p.id === f.id)).map((f) => (
-            <div key={f.id} className={`${styles.friendRow} ${styles.friendRowOffline}`} onClick={() => { setMobileDrawer(false); onViewProfile(f.id) }}>
+            <div key={f.id} className={`${styles.friendRow} ${styles.friendRowOffline}`}>
               <Avatar username={f.username} avatarUrl={f.avatarUrl} size={30} />
-              <div className={styles.friendInfo}>
+              <div className={styles.friendInfo} style={{ flex: 1 }}>
                 <span className={styles.friendName}>{f.username}</span>
                 <span className={styles.friendStatus}>Hors ligne</span>
+              </div>
+              <div className={styles.friendActions}>
+                <button className={styles.friendIconBtn} style={{ position: 'relative' }} onClick={() => openDM(f.id, { username: f.username, avatarUrl: f.avatarUrl })} title="Message privé">
+                  <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" strokeLinejoin="round"/></svg>
+                  {(convs.get(f.id)?.unreadCount ?? 0) > 0 && (
+                    <span className={styles.friendUnreadDot}>{convs.get(f.id)!.unreadCount}</span>
+                  )}
+                </button>
+                <button className={styles.friendIconBtn} onClick={() => onViewProfile(f.id)} title="Voir le profil">
+                  <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                </button>
               </div>
             </div>
           ))}
@@ -244,6 +271,10 @@ export function LobbyPage({ onJoinRoom, onCreateRoom, onLogout, onViewProfile }:
           <span>Nonix Games</span>
         </div>
         <div className={styles.navRight}>
+          <button className={styles.msgNavBtn} onClick={() => navigate('/messages')} title="Messages">
+            <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" strokeLinejoin="round"/></svg>
+            {totalUnread > 0 && <span className={styles.msgNavBadge}>{totalUnread}</span>}
+          </button>
           <NotifBell onFriendRequestHandled={loadFriends} />
           <div className={styles.navUser} onClick={() => onViewProfile(userId)} style={{ cursor: 'pointer' }}>
             <div className={styles.navUserInfo}>
@@ -271,24 +302,46 @@ export function LobbyPage({ onJoinRoom, onCreateRoom, onLogout, onViewProfile }:
         <div className={styles.friendsList}>
           {/* Amis en ligne */}
           {friends.filter((f) => onlinePlayers.some((p) => p.id === f.id)).map((f) => (
-            <div key={f.id} className={styles.friendRow} onClick={() => onViewProfile(f.id)}>
+            <div key={f.id} className={styles.friendRow}>
               <div className={styles.friendAvatarWrap}>
                 <Avatar username={f.username} avatarUrl={f.avatarUrl} size={30} />
                 <span className={styles.onlineDot} />
               </div>
-              <div className={styles.friendInfo}>
+              <div className={styles.friendInfo} style={{ flex: 1 }}>
                 <span className={styles.friendName}>{f.username}</span>
                 <span className={styles.friendStatus} style={{ color: 'var(--green)' }}>En ligne</span>
+              </div>
+              <div className={styles.friendActions}>
+                <button className={styles.friendIconBtn} style={{ position: 'relative' }} onClick={() => openDM(f.id, { username: f.username, avatarUrl: f.avatarUrl })} title="Message privé">
+                  <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" strokeLinejoin="round"/></svg>
+                  {(convs.get(f.id)?.unreadCount ?? 0) > 0 && (
+                    <span className={styles.friendUnreadDot}>{convs.get(f.id)!.unreadCount}</span>
+                  )}
+                </button>
+                <button className={styles.friendIconBtn} onClick={() => onViewProfile(f.id)} title="Voir le profil">
+                  <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                </button>
               </div>
             </div>
           ))}
           {/* Amis hors ligne */}
           {friends.filter((f) => !onlinePlayers.some((p) => p.id === f.id)).map((f) => (
-            <div key={f.id} className={`${styles.friendRow} ${styles.friendRowOffline}`} onClick={() => onViewProfile(f.id)}>
+            <div key={f.id} className={`${styles.friendRow} ${styles.friendRowOffline}`}>
               <Avatar username={f.username} avatarUrl={f.avatarUrl} size={30} />
-              <div className={styles.friendInfo}>
+              <div className={styles.friendInfo} style={{ flex: 1 }}>
                 <span className={styles.friendName}>{f.username}</span>
                 <span className={styles.friendStatus}>Hors ligne</span>
+              </div>
+              <div className={styles.friendActions}>
+                <button className={styles.friendIconBtn} style={{ position: 'relative' }} onClick={() => openDM(f.id, { username: f.username, avatarUrl: f.avatarUrl })} title="Message privé">
+                  <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" strokeLinejoin="round"/></svg>
+                  {(convs.get(f.id)?.unreadCount ?? 0) > 0 && (
+                    <span className={styles.friendUnreadDot}>{convs.get(f.id)!.unreadCount}</span>
+                  )}
+                </button>
+                <button className={styles.friendIconBtn} onClick={() => onViewProfile(f.id)} title="Voir le profil">
+                  <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                </button>
               </div>
             </div>
           ))}
@@ -454,6 +507,18 @@ export function LobbyPage({ onJoinRoom, onCreateRoom, onLogout, onViewProfile }:
           </div>
         </div>
       )}
+
+      {/* ── DM Windows (desktop) ── */}
+      {!isMobile && windows.map((friendId, i) => {
+        const conv = convs.get(friendId)
+        if (!conv) return null
+        return (
+          <DMWindow key={friendId} conv={conv} myId={userId} index={i}
+            onClose={() => closeDM(friendId)}
+            onSend={sendMessage}
+            onLoadMore={(uid, before) => loadConversation(uid, before)} />
+        )
+      })}
 
       {/* ── Mobile bottom bar ── */}
       <div className={styles.mobileBottomBar}>

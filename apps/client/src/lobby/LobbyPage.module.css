@@ -757,3 +757,72 @@
 
   @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 }
+
+/* ── DM ─────────────────────────────────────────────────────────────────────── */
+.friendRow { align-items: center; }
+
+.friendActions {
+  display: flex;
+  gap: 4px;
+  flex-shrink: 0;
+  margin-left: auto;
+}
+
+.friendIconBtn {
+  background: none;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  padding: 3px 6px;
+  cursor: pointer;
+  font-size: 14px;
+  line-height: 1;
+  transition: border-color .1s, background .1s;
+}
+.friendIconBtn:hover { border-color: var(--border); background: var(--bg-hover); }
+
+/* Bouton messages dans la navbar */
+.msgNavBtn {
+  position: relative;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 18px;
+  line-height: 1;
+  padding: 4px;
+}
+
+.msgNavBadge {
+  position: absolute;
+  top: -2px;
+  right: -4px;
+  background: var(--accent);
+  color: white;
+  font-size: 9px;
+  font-weight: 700;
+  min-width: 15px;
+  height: 15px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 3px;
+}
+
+/* ── Badge non-lus DM ─────────────────────────────────────────────────────────── */
+.friendUnreadDot {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  background: var(--accent);
+  color: white;
+  font-size: 9px;
+  font-weight: 700;
+  min-width: 14px;
+  height: 14px;
+  border-radius: 7px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 3px;
+  pointer-events: none;
+}

@@ -109,6 +109,36 @@ export const sounds = {
     })
   },
 
+  // Notification message privé — "plop" doux et agréable
+  dmNotif: () => {
+    const ac = getCtx()
+    // Deux sinusoïdes superposées pour un son riche et doux
+    const freqs = [520, 780]
+    freqs.forEach((freq, i) => {
+      const osc = ac.createOscillator()
+      const gain = ac.createGain()
+      const filter = ac.createBiquadFilter()
+
+      osc.type = 'sine'
+      osc.frequency.setValueAtTime(freq * 0.85, ac.currentTime)
+      osc.frequency.exponentialRampToValueAtTime(freq, ac.currentTime + 0.04)
+
+      filter.type = 'lowpass'
+      filter.frequency.value = 2400
+      filter.Q.value = 0.5
+
+      gain.gain.setValueAtTime(0, ac.currentTime)
+      gain.gain.linearRampToValueAtTime(i === 0 ? 0.14 : 0.07, ac.currentTime + 0.02)
+      gain.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + 0.22)
+
+      osc.connect(filter)
+      filter.connect(gain)
+      gain.connect(ac.destination)
+      osc.start(ac.currentTime)
+      osc.stop(ac.currentTime + 0.25)
+    })
+  },
+
   // Indice révélé
   hint: () => {
     const ac = getCtx()

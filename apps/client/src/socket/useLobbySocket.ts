@@ -15,6 +15,11 @@ let _currentToken: string | null = null
 type LobbyEvent = 'lobby:state' | 'lobby:player-joined' | 'lobby:player-left' | 'lobby:invite-receive' | 'lobby:room-opened' | 'lobby:room-closed'
 const _subscribers = new Map<LobbyEvent, Set<(d: any) => void>>()
 
+export function getLobbySocket(token?: string): LobbySocket | null {
+  if (token && (!_socket || _currentToken !== token)) _initSocket(token)
+  return _socket
+}
+
 function _initSocket(token: string): LobbySocket {
   if (_socket && _currentToken === token) return _socket
   _socket?.disconnect()

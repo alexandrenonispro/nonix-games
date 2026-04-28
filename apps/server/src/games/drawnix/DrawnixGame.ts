@@ -380,6 +380,7 @@ export class DrawnixGame {
       totalRounds: this.settings.rounds,
       scores: turnScoresSummary,
       isLastTurn: allDrawn,
+      word: state.word,
     })
 
     // Après 5s : tour suivant ou nouveau round

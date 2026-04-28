@@ -15,10 +15,11 @@ interface RoundRecapProps {
   totalRounds: number
   scores: RecapPlayer[]
   isLastTurn?: boolean
+  word?: string | null
   onClose: () => void
 }
 
-export function RoundRecap({ round, totalRounds, scores, isLastTurn, onClose }: RoundRecapProps) {
+export function RoundRecap({ round, totalRounds, scores, isLastTurn, word, onClose }: RoundRecapProps) {
   const [timeLeft, setTimeLeft] = useState(5)
   const sorted = [...scores].sort((a, b) => b.totalScore - a.totalScore)
   const isLast = round >= totalRounds
@@ -36,6 +37,12 @@ export function RoundRecap({ round, totalRounds, scores, isLastTurn, onClose }: 
   return (
     <div className={styles.overlay}>
       <div className={styles.modal}>
+        {word && (
+          <div className={styles.wordReveal}>
+            <span className={styles.wordRevealLabel}>Le mot était</span>
+            <strong className={styles.wordRevealWord}>{word}</strong>
+          </div>
+        )}
         <div className={styles.header}>
           <div>
             <p className={styles.roundLabel}>Round {round} / {totalRounds}</p>
@@ -43,7 +50,6 @@ export function RoundRecap({ round, totalRounds, scores, isLastTurn, onClose }: 
           </div>
           <div className={styles.timer}>{timeLeft}</div>
         </div>
-
         <div className={styles.scores}>
           {sorted.map((p, i) => (
             <div key={p.id} className={styles.row}>

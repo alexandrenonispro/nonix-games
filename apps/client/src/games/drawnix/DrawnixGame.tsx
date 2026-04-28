@@ -155,7 +155,7 @@ export function DrawnixGame({ token, settings, onLeave, isHost }: DrawnixGamePro
   const [waitingName, setWaitingName] = useState('')
   const currentDrawerIdRef = useRef<string | null>(null)
   const [turnEndWord, setTurnEndWord] = useState<string | null>(null)
-  const [roundRecap, setRoundRecap] = useState<{ round: number; totalRounds: number; scores: any[]; isLastTurn?: boolean } | null>(null)
+  const [roundRecap, setRoundRecap] = useState<{ round: number; totalRounds: number; scores: any[]; isLastTurn?: boolean; word?: string } | null>(null)
   const pendingWordChoices = useRef<string[] | null>(null)
   const roundRecapRef = useRef(false)
   const pendingWordRef = useRef<string | null>(null)
@@ -302,7 +302,7 @@ export function DrawnixGame({ token, settings, onLeave, isHost }: DrawnixGamePro
         // Son lose si personne n'a marqué de point ce tour
         const totalPoints = (d.scores as any[]).reduce((sum: number, s: any) => sum + (s.roundScore ?? 0), 0)
         if (totalPoints === 0) sounds.noPoints()
-        setRoundRecap({ round: d.round, totalRounds: d.totalRounds, scores: d.scores, isLastTurn: d.isLastTurn })
+        setRoundRecap({ round: d.round, totalRounds: d.totalRounds, scores: d.scores, isLastTurn: d.isLastTurn, word: d.word })
       }
 
       const onClear = () => {
@@ -518,6 +518,7 @@ export function DrawnixGame({ token, settings, onLeave, isHost }: DrawnixGamePro
           totalRounds={roundRecap.totalRounds}
           scores={roundRecap.scores}
           isLastTurn={roundRecap.isLastTurn}
+          word={roundRecap.word ?? turnEndWord}
           onClose={() => {
             roundRecapRef.current = false
             setRoundRecap(null)

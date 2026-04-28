@@ -2,6 +2,7 @@ import express from 'express'
 import cors from 'cors'
 import { authRouter } from './auth.routes.js'
 import { usersRouter } from './users.routes.js'
+import { dmRouter } from './dm.routes.js'
 import { uploadRouter } from './upload.routes.js'
 
 export const app = express()
@@ -15,4 +16,5 @@ app.get('/health', (_req, res) => {
 
 app.use('/api/auth', authRouter)
 app.use('/api/users', usersRouter)
+app.use('/api/dm', dmRouter)
 app.use('/api/upload', uploadRouter)

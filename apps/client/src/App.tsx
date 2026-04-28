@@ -4,6 +4,7 @@ import { BrowserRouter, Routes, Route, useNavigate, useParams, Navigate } from '
 import { AuthProvider, useAuth } from './auth/AuthContext'
 import { LoadingScreen } from './components/LoadingScreen'
 import { NotFoundPage } from './components/NotFoundPage'
+import { MessagesPage } from './dm/MessagesPage'
 import { AuthPage } from './auth/AuthPage'
 import { LobbyPage } from './lobby/LobbyPage'
 import { RoomPage } from './room/RoomPage'
@@ -11,6 +12,7 @@ import { QuizGame } from './games/quiz/QuizGame'
 import { DrawnixGame } from './games/drawnix/DrawnixGame'
 import { ProfilePage } from './profile/ProfilePage'
 import { useRoomSocket, getRoomSocket } from './socket/useRoomSocket'
+import { getLobbySocket } from './socket/useLobbySocket'
 import type { Room, RoomMember, Message } from '@game-platform/shared'
 
 const ROOM_KEY = 'gp_room_code'
@@ -43,6 +45,17 @@ function AppShell() {
   const [gameInfo, setGameInfo] = useState<{ gameId: string; settings: any; code: string } | null>(null)
   const gameInfoRef = useRef<{ gameId: string; settings: any; code: string } | null>(null)
   const inGameRef = useRef(false)
+
+  // Maintenir la connexion lobby active sur toutes les pages + signaler la présence
+  useEffect(() => {
+    if (!token || !user?.id) return
+    const socket = getLobbySocket(token)
+    if (!socket) return
+    const doJoin = () => socket.emit('lobby:join' as any, { userId: user.id })
+    if (socket.connected) doJoin()
+    else socket.once('connect', doJoin)
+    return () => { socket.off('connect', doJoin) }
+  }, [token, user?.id])
 
   const { joinRoom, createRoom, leaveRoom, setReady, changeGame, sendMessage, startGame, kickPlayer } =
     useRoomSocket(token!, {
@@ -193,6 +206,11 @@ function AppShell() {
               />
             : <Navigate to="/" replace />
         } />
+
+        {/* Messages */}
+        <Route path="/messages" element={<MessagesPage />} />
+        {/* Messages avec conversation ouverte */}
+        <Route path="/messages/:userId" element={<MessagesPage />} />
 
         {/* 404 */}
         <Route path="*" element={<NotFoundPage />} />
