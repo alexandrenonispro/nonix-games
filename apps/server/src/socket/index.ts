@@ -8,7 +8,7 @@ import { parseToken } from '../lib/auth.js'
 export function initSocketIO(httpServer: HttpServer) {
   const io = new Server(httpServer, {
     cors: {
-      origin: process.env.CLIENT_URL ?? 'http://localhost:5173',
+      origin: ['http://localhost:5173', 'http://192.168.1.176:5173', process.env.CLIENT_URL].filter(Boolean) as string[],
       methods: ['GET', 'POST'],
       credentials: true,
     },

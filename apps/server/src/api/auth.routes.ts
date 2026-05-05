@@ -52,7 +52,7 @@ authRouter.post('/register', async (req, res) => {
 
     const user = await prisma.user.create({
       data: { username, email: finalEmail, password: hashedPassword },
-      select: { id: true, username: true, email: true, level: true, rank: true, avatarUrl: true },
+      select: { id: true, username: true, email: true, level: true, rank: true, avatarUrl: true, role: true },
     })
 
     const token = signToken({ userId: user.id, username: user.username })
@@ -77,7 +77,7 @@ authRouter.post('/login', async (req, res) => {
   try {
     const user = await prisma.user.findUnique({
       where: { username },
-      select: { id: true, username: true, email: true, password: true, level: true, rank: true, avatarUrl: true },
+      select: { id: true, username: true, email: true, password: true, level: true, rank: true, avatarUrl: true, role: true },
     })
 
     if (!user) {
@@ -119,7 +119,7 @@ authRouter.get('/me', async (req, res) => {
   try {
     const user = await prisma.user.findUnique({
       where: { id: payload.userId },
-      select: { id: true, username: true, email: true, level: true, rank: true, avatarUrl: true, xp: true },
+      select: { id: true, username: true, email: true, level: true, rank: true, avatarUrl: true, xp: true, role: true },
     })
 
     if (!user) return res.status(404).json({ error: 'Utilisateur introuvable' })

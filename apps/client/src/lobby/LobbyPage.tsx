@@ -296,6 +296,11 @@ export function LobbyPage({ onJoinRoom, onCreateRoom, onLogout, onViewProfile }:
           <button className={styles.rulesNavBtn} onClick={() => navigate('/rules')} title="Règles des jeux">
             📖 Règles
           </button>
+          {(user as any)?.role === 'ADMIN' && (
+            <button className={styles.rulesNavBtn} style={{ color: 'var(--accent)' }} onClick={() => navigate('/admin')} title="Administration">
+              ⚙️ Admin
+            </button>
+          )}
           <button className={styles.msgNavBtn} onClick={() => navigate('/messages')} title="Messages">
             <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" strokeLinejoin="round"/></svg>
             {totalUnread > 0 && <span className={styles.msgNavBadge}>{totalUnread}</span>}

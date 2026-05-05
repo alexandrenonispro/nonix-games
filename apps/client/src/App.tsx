@@ -7,6 +7,7 @@ import { NotFoundPage } from './components/NotFoundPage'
 import { MessagesPage } from './dm/MessagesPage'
 import { SmileLifeGame } from './games/smilelife/SmileLifeGame'
 import { RulesPage } from './rules/RulesPage'
+import { AdminPage } from './admin/AdminPage'
 import { AuthPage } from './auth/AuthPage'
 import { LobbyPage } from './lobby/LobbyPage'
 import { RoomPage } from './room/RoomPage'
@@ -207,6 +208,7 @@ function AppShell() {
         {/* Messages */}
         <Route path="/messages" element={<MessagesPage />} />
           <Route path="/rules" element={<RulesPage />} />
+          <Route path="/admin" element={<AdminPage />} />
         {/* Messages avec conversation ouverte */}
         <Route path="/messages/:userId" element={<MessagesPage />} />
 
