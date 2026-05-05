@@ -4,6 +4,7 @@ import type { Room, RoomMember, Message, GameId, GameSettings as SharedGameSetti
 import { useAuth } from '../auth/AuthContext'
 import { useRoomSocket } from '../socket/useRoomSocket'
 import styles from './RoomPage.module.css'
+import { RulesPanel } from '../rules/RulesPanel'
 import { sounds } from '../lib/sounds'
 import { GameSettings } from './GameSettings'
 import { Avatar } from '../components/Avatar'
@@ -262,6 +263,10 @@ export function RoomPage({ token, initialState, onLeave, onGameStart, setReady, 
           )}
         </div>
       </aside>
+
+      <section className={styles.rulesPanel}>
+        <RulesPanel gameId={room?.gameId ?? initialState.room.gameId} />
+      </section>
 
       <section className={styles.chatPanel}>
         <div className={styles.chatHeader}>

@@ -113,6 +113,11 @@ export function registerLobbyHandlers(lobby: Namespace, socket: Socket) {
     }
   })
 
+  socket.on('lobby:check-room' as any, ({ code }: { code: string }, callback: (exists: boolean) => void) => {
+    const room = store.get(code)
+    callback(!!room)
+  })
+
   socket.on('disconnect', () => {
     store.removeLobbyPlayer(user.id)
     socket.to('lobby-general').emit('lobby:player-left', { userId: user.id })

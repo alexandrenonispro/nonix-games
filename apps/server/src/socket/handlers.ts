@@ -297,15 +297,24 @@ export function registerRoomHandlers(roomNS: Namespace, socket: Socket) {
   socket.on('game:action' as any, (action: { type: string; data: any }) => {
     const room = store.getRoomBySocket(socket.id)
     if (!room) return
+    const game = gameInstances.get(room.code)
+    if (!game) return
 
     console.log(`[room] game:action ${action.type} from ${user.username}`)
 
-    // ── Fermeture de partie (tous jeux) ─────────────────────────────────────
+    if (action.type === 'drawnix:choose-word') {
+      game.chooseWord(user.id, (action.data as any).word)
+    }
+    if (action.type === 'drawnix:snapshot') {
+      game.receiveSnapshot((action.data as any).turnIndex, (action.data as any).canvasData)
+    }
     if (action.type === 'drawnix:close-game' || action.type === 'smilelife:close-game') {
+      // Seul l'hôte peut fermer la partie
       if (room.hostId !== user.id) return
-      const game = gameInstances.get(room.code)
-      if (game) { game.cleanup(); gameInstances.delete(room.code) }
+      game.cleanup()
+      gameInstances.delete(room.code)
       cleanupSmileLife(room.code)
+      // Kicker tout le monde
       for (const m of Array.from(room.members.values())) {
         const s = roomNS.sockets.get(m.socketId)
         if (s) {
@@ -318,18 +327,11 @@ export function registerRoomHandlers(roomNS: Namespace, socket: Socket) {
       socket.emit('room:room-closed' as any)
       store.delete(room.code)
       roomNS.server.of('/lobby').to('lobby-general').emit('lobby:room-closed' as any, { code: room.code })
+      // Nettoyer localStorage côté client via l'event kicked
+      console.log('[room] host closed game in room', room.code)
       return
     }
 
-    const game = gameInstances.get(room.code)
-    if (!game) return
-
-    if (action.type === 'drawnix:choose-word') {
-      game.chooseWord(user.id, (action.data as any).word)
-    }
-    if (action.type === 'drawnix:snapshot') {
-      game.receiveSnapshot((action.data as any).turnIndex, (action.data as any).canvasData)
-    }
     if (action.type === 'drawnix:reaction') {
       // Relayer la réaction à tous les autres joueurs
       roomNS.to(room.code).except(socket.id).emit('drawnix:reaction' as any, {

@@ -826,3 +826,23 @@
   padding: 0 3px;
   pointer-events: none;
 }
+
+/* Bouton Règles dans la navbar */
+.rulesNavBtn {
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 5px 12px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-family: var(--font-body);
+  transition: all .15s;
+  white-space: nowrap;
+}
+.rulesNavBtn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: var(--accent-dim);
+}

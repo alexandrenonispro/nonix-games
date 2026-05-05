@@ -1,0 +1,242 @@
+/* ── Base card ── */
+.card {
+  position: relative;
+  border-radius: 10px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  background: var(--card-bg, #f3f4f6);
+  border: 1.5px solid color-mix(in srgb, var(--card-color, #6b7280) 30%, transparent);
+  transition: transform .15s ease, box-shadow .15s ease;
+  user-select: none;
+  flex-shrink: 0;
+}
+
+/* ── Tailles ── */
+.hand {
+  width: 162px;
+  height: 232px;
+}
+
+.mini {
+  width: 52px;
+  height: 74px;
+}
+
+.preview {
+  width: 140px;
+  height: 200px;
+}
+
+/* ── Header coloré ── */
+.header {
+  background: var(--card-color, #6b7280);
+  padding: 4px 5px 3px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 2px;
+  flex-shrink: 0;
+}
+
+.mini .header { padding: 3px 4px 2px; }
+.preview .header { padding: 7px 8px 5px; }
+
+.smiles {
+  font-size: 9px;
+  line-height: 1;
+  flex-shrink: 0;
+  letter-spacing: -1px;
+}
+.mini .smiles { font-size: 6px; }
+.preview .smiles { font-size: 10px; }
+
+.cardName {
+  font-size: 10px;
+  font-weight: 700;
+  color: #fff;
+  text-align: center;
+  flex: 1;
+  line-height: 1.2;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+.mini .cardName { font-size: 6px; }
+.preview .cardName { font-size: 12px; }
+
+.tag {
+  font-size: 8px;
+  font-weight: 700;
+  color: rgba(255,255,255,0.85);
+  flex-shrink: 0;
+  text-align: right;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+.preview .tag { font-size: 10px; }
+
+/* ── Corps ── */
+.body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  padding: 4px 3px;
+}
+
+.emoji {
+  font-size: 42px;
+  line-height: 1;
+  display: block;
+}
+.mini .emoji { font-size: 18px; }
+.preview .emoji { font-size: 52px; }
+
+.childName, .lieu, .cost {
+  font-size: 9px;
+  font-weight: 600;
+  color: color-mix(in srgb, var(--card-color, #374151) 80%, black);
+  text-align: center;
+  line-height: 1.2;
+  padding: 0 2px;
+}
+.preview .childName, .preview .lieu, .preview .cost { font-size: 11px; }
+
+/* ── Footer ── */
+.footer {
+  padding: 3px 7px 5px;
+  font-size: 9px;
+  color: color-mix(in srgb, var(--card-color, #374151) 90%, black);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 14px;
+  flex-shrink: 0;
+}
+.preview .footer { font-size: 10px; padding: 4px 8px 6px; min-height: 20px; }
+
+/* ── Image full (quand asset.image existe) ── */
+.fullImage {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+  background: #fff;
+}
+
+/* ── États ── */
+.clickable { cursor: pointer; }
+
+.playable:hover {
+  transform: translateY(-6px) scale(1.05);
+  box-shadow: 0 8px 20px color-mix(in srgb, var(--card-color, #000) 35%, transparent);
+  z-index: 10;
+}
+
+.selected {
+  transform: translateY(-8px) scale(1.06);
+  box-shadow: 0 0 0 3px var(--accent, #3d9e8a), 0 10px 24px color-mix(in srgb, var(--card-color, #000) 40%, transparent);
+  z-index: 11;
+}
+
+.dimmed {
+  opacity: 0.4;
+  filter: grayscale(0.7);
+}
+
+.selectedBadge {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  background: var(--accent, #3d9e8a);
+  color: white;
+  font-size: 9px;
+  font-weight: 700;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ── Carte cachée ── */
+.hidden {
+  background: #1e293b;
+  border-color: #334155;
+  cursor: default;
+}
+
+.hiddenPattern {
+  position: absolute;
+  inset: 0;
+  background-image: repeating-linear-gradient(
+    45deg,
+    #ffffff08 0px, #ffffff08 2px,
+    transparent 2px, transparent 8px
+  );
+}
+
+.hiddenIcon {
+  font-size: 28px;
+  margin: auto;
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+}
+.mini .hiddenIcon { font-size: 16px; }
+
+/* ── Étude card custom layout ── */
+.etudeHeader {
+  background: #3b6fd4;
+  padding: 5px 6px 4px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+.etudeTitle {
+  font-size: 9px;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: .07em;
+  text-transform: uppercase;
+  flex: 1;
+  text-align: center;
+}
+.hand .etudeTitle { font-size: 11px; }
+.preview .etudeTitle { font-size: 14px; }
+.etudeCaps {
+  display: flex;
+  gap: 2px;
+  align-items: center;
+  flex-direction: column;
+  align-items: flex-end;
+}
+.etudeBody {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #fff;
+  padding: 4px;
+}
+.etudeFooter {
+  background: #f0f0f0;
+  padding: 8px 6px;
+  text-align: center;
+  font-size: 9px;
+  font-weight: 600;
+  color: #444;
+  border-top: 1px solid #e2e8f0;
+  flex-shrink: 0;
+}
+.hand .etudeFooter { font-size: 11px; padding: 10px 8px; }
+.preview .etudeFooter { font-size: 14px; padding: 14px; }

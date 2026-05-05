@@ -210,6 +210,93 @@ export const sounds = {
     })
   },
 
+  // ── Smile Life ─────────────────────────────────────────────────────────────
+
+  // Début de partie — fanfare courte joyeuse
+  slGameStart: () => {
+    const ac = getCtx()
+    const melody = [
+      { freq: 523, t: 0.0,  dur: 0.1 },
+      { freq: 659, t: 0.1,  dur: 0.1 },
+      { freq: 784, t: 0.2,  dur: 0.1 },
+      { freq: 1047,t: 0.3,  dur: 0.28 },
+    ]
+    melody.forEach(({ freq, t, dur }) => {
+      const osc = ac.createOscillator()
+      const gain = ac.createGain()
+      osc.connect(gain); gain.connect(ac.destination)
+      osc.type = 'triangle'
+      osc.frequency.value = freq
+      gain.gain.setValueAtTime(0.22, ac.currentTime + t)
+      gain.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + t + dur)
+      osc.start(ac.currentTime + t)
+      osc.stop(ac.currentTime + t + dur + 0.05)
+    })
+  },
+
+  // C'est votre tour — deux notes légères ascendantes
+  slYourTurn: () => {
+    const ac = getCtx()
+    const notes = [
+      { freq: 659, t: 0.0,  dur: 0.1 },
+      { freq: 880, t: 0.12, dur: 0.18 },
+    ]
+    notes.forEach(({ freq, t, dur }) => {
+      const osc = ac.createOscillator()
+      const gain = ac.createGain()
+      osc.connect(gain); gain.connect(ac.destination)
+      osc.type = 'sine'
+      osc.frequency.value = freq
+      gain.gain.setValueAtTime(0.18, ac.currentTime + t)
+      gain.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + t + dur)
+      osc.start(ac.currentTime + t)
+      osc.stop(ac.currentTime + t + dur + 0.05)
+    })
+  },
+
+  // Tour d'un autre joueur — note douce plus basse
+  slOtherTurn: () => {
+    beep(440, 0.18, 0.12, 'sine')
+  },
+
+  // Malus infligé — son grave menaçant
+  slMalus: () => {
+    const ac = getCtx()
+    const notes = [
+      { freq: 220, t: 0.0,  dur: 0.15 },
+      { freq: 185, t: 0.14, dur: 0.22 },
+    ]
+    notes.forEach(({ freq, t, dur }) => {
+      const osc = ac.createOscillator()
+      const gain = ac.createGain()
+      osc.connect(gain); gain.connect(ac.destination)
+      osc.type = 'sawtooth'
+      osc.frequency.value = freq
+      gain.gain.setValueAtTime(0.2, ac.currentTime + t)
+      gain.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + t + dur)
+      osc.start(ac.currentTime + t)
+      osc.stop(ac.currentTime + t + dur + 0.05)
+    })
+  },
+
+  // Carte spéciale jouée — son magique scintillant
+  slSpecial: () => {
+    const ac = getCtx()
+    const freqs = [784, 988, 1175, 1568, 1175, 988]
+    freqs.forEach((freq, i) => {
+      const osc = ac.createOscillator()
+      const gain = ac.createGain()
+      osc.connect(gain); gain.connect(ac.destination)
+      osc.type = 'sine'
+      osc.frequency.value = freq
+      const t = i * 0.07
+      gain.gain.setValueAtTime(0.13, ac.currentTime + t)
+      gain.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + t + 0.14)
+      osc.start(ac.currentTime + t)
+      osc.stop(ac.currentTime + t + 0.18)
+    })
+  },
+
   // Podium / victoire
   victory: () => {
     const ac = getCtx()

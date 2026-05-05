@@ -1,7 +1,8 @@
 import { Server } from 'socket.io'
 import type { Server as HttpServer } from 'http'
 import { registerLobbyHandlers } from './lobby/handlers.js'
-import { registerRoomHandlers } from './room/handlers.js'
+import { registerRoomHandlers, clearAllGames } from './room/handlers.js'
+clearAllGames() // Nettoyer les parties en cours au démarrage
 import { parseToken } from '../lib/auth.js'
 
 export function initSocketIO(httpServer: HttpServer) {

@@ -1,0 +1,214 @@
+/* ── Layout ── */
+.root { display: flex; flex-direction: column; height: 100vh; overflow: hidden; background: var(--bg-base); }
+
+.loading, .podium {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  height: 100vh; gap: 16px; color: var(--text-primary);
+}
+.loadingSpinner { width: 40px; height: 40px; border: 3px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin .8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.startBtn { padding: 12px 28px; background: var(--accent); color: white; border: none; border-radius: var(--radius-md); font-size: 16px; font-weight: 700; cursor: pointer; }
+
+/* ── Header ── */
+.header { display: flex; align-items: center; justify-content: space-between; padding: 10px 16px; background: var(--bg-surface); border-bottom: 1px solid var(--border); flex-shrink: 0; gap: 12px; }
+.headerCenter { display: flex; flex-direction: column; align-items: center; flex: 1; gap: 2px; }
+.gameName { font-family: var(--font-display); font-size: 18px; font-weight: 800; color: var(--accent); }
+.turnBadge { background: var(--accent); color: white; font-size: 12px; font-weight: 700; padding: 2px 10px; border-radius: 20px; }
+.turnLabel { font-size: 12px; color: var(--text-muted); }
+.deckCount { font-size: 13px; color: var(--text-muted); font-family: var(--font-mono); flex-shrink: 0; }
+.leaveBtn { background: none; border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 5px 10px; font-size: 13px; cursor: pointer; color: var(--text-muted); white-space: nowrap; }
+.leaveBtn:hover { border-color: var(--accent); color: var(--accent); }
+
+/* ── Banners ── */
+.errorBanner { background: #fef2f2; border: 1px solid #fca5a5; color: #dc2626; padding: 8px 16px; font-size: 13px; text-align: center; flex-shrink: 0; }
+.pendingBanner { background: #fffbeb; border: 1px solid #fde68a; color: #92400e; padding: 8px 16px; font-size: 13px; text-align: center; flex-shrink: 0; }
+
+/* ── Body ── */
+.body { display: grid; grid-template-columns: 1fr 300px 1fr; flex: 1; overflow: hidden; gap: 8px; padding: 8px; }
+
+/* ── Others ── */
+.othersArea { display: flex; flex-direction: column; gap: 6px; overflow-y: auto; }
+
+/* ── Center ── */
+.centerArea { display: flex; flex-direction: column; gap: 8px; }
+.piles { display: flex; gap: 10px; justify-content: center; }
+.pileWrap { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.pile { width: 80px; height: 110px; border-radius: var(--radius-md); border: 2px solid var(--border); background: var(--bg-surface); cursor: default; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; transition: all .15s; }
+.pileActive { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-dim); cursor: pointer; }
+.pileActive:hover { transform: scale(1.04); }
+.pileDeck { background: var(--accent-dim); }
+.pileIcon { font-size: 24px; }
+.pileCount { font-size: 18px; font-weight: 700; color: var(--accent); font-family: var(--font-mono); }
+.pileEmpty { font-size: 11px; color: var(--text-muted); }
+.pileLabel { font-size: 11px; color: var(--text-muted); }
+.pileDiscard:disabled { opacity: .5; }
+
+.specialActions { display: flex; flex-direction: column; gap: 6px; }
+.actionBtn { padding: 6px 10px; background: var(--bg-elevated); border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 12px; cursor: pointer; font-family: var(--font-body); transition: all .15s; }
+.actionBtn:hover { border-color: var(--accent); color: var(--accent); }
+
+.log { flex: 1; overflow-y: auto; background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 8px 10px; font-size: 13px; display: flex; flex-direction: column; gap: 3px; min-height: 0; max-height: 280px; scroll-behavior: smooth; }
+.logLine { color: var(--text-secondary); line-height: 1.5; border-bottom: 1px solid var(--border); padding-bottom: 3px; }
+
+/* ── My area ── */
+.myArea { overflow-y: auto; max-height: 100%; }
+
+/* ── Hand ── */
+.hand {
+  background: linear-gradient(to top, var(--bg-surface) 70%, transparent);
+  padding: 8px 16px 0;
+  flex-shrink: 0;
+  height: 220px;
+  position: relative;
+  overflow: visible;
+}
+
+.handLabel {
+  font-size: 12px;
+  color: var(--text-muted);
+  font-weight: 600;
+  text-align: center;
+  position: relative;
+  z-index: 200;
+  margin-bottom: 0;
+}
+
+.handFan {
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  position: absolute;
+  bottom: -20px;
+  left: 0;
+  right: 0;
+  height: 210px;
+  pointer-events: none;
+}
+
+.fanCard {
+  position: relative;
+  transition: transform .25s cubic-bezier(.22,.68,0,1.2), filter .2s ease;
+  pointer-events: all;
+  margin: 0 -14px;
+  cursor: pointer;
+  flex-shrink: 0;
+  will-change: transform;
+}
+
+.fanCard:hover {
+  transition-delay: .04s;
+}
+
+.fanCardPlayable:hover {
+  transform: rotate(0deg) translateY(-72px) scale(1.14) !important;
+  z-index: 99 !important;
+  filter: drop-shadow(0 14px 28px rgba(0,0,0,0.4));
+  transition-delay: .04s;
+}
+
+.fanCardSelected {
+  filter: drop-shadow(0 0 12px var(--accent));
+}
+
+/* ── Podium ── */
+.podiumTitle { font-family: var(--font-display); font-size: 28px; font-weight: 800; }
+.podiumList { display: flex; flex-direction: column; gap: 8px; width: 100%; max-width: 400px; }
+.podiumRow { display: flex; align-items: center; gap: 12px; background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 12px 16px; }
+.podiumMe { border-color: var(--accent); background: var(--accent-dim); }
+.podiumRank { font-size: 22px; }
+.podiumName { flex: 1; font-weight: 600; font-size: 15px; }
+.podiumScore { font-family: var(--font-mono); font-size: 16px; font-weight: 700; color: var(--accent); }
+
+/* ── Mobile ── */
+@media (max-width: 480px) {
+  .body { grid-template-columns: 1fr; grid-template-rows: auto 1fr auto; }
+  .othersArea { flex-direction: row; overflow-x: auto; overflow-y: hidden; gap: 6px; }
+  .centerArea { display: flex; flex-direction: row; gap: 6px; overflow: hidden; }
+  .piles { flex-direction: column; }
+  .log { min-height: 60px; flex: 1; }
+  .handCards { gap: 4px; }
+}
+
+.actionBtnSkip { background: #fef3c7; border-color: #f59e0b; color: #92400e; font-weight: 700; }
+.actionBtnSkip:hover { background: #fde68a; }
+
+.arcBanner {
+  background: linear-gradient(90deg, #fef3c7, #ecfdf5, #eff6ff, #fdf2f8);
+  border: 2px solid var(--accent);
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+/* ── Animation tour ── */
+@keyframes turnFadeIn {
+  0%   { opacity: 0; transform: scale(.85) translateY(12px); }
+  20%  { opacity: 1; transform: scale(1.03) translateY(0); }
+  80%  { opacity: 1; transform: scale(1) translateY(0); }
+  100% { opacity: 0; transform: scale(.95) translateY(-8px); }
+}
+
+@keyframes avatarPop {
+  0%   { transform: scale(0.5); }
+  60%  { transform: scale(1.12); }
+  100% { transform: scale(1); }
+}
+
+.turnAnimOverlay {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 500;
+  pointer-events: none;
+}
+
+.turnAnimCard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  background: var(--bg-surface);
+  border: 1.5px solid var(--accent);
+  border-radius: var(--radius-lg);
+  padding: 28px 48px;
+  box-shadow: 0 8px 40px rgba(0,0,0,0.18), 0 0 0 4px var(--accent-dim);
+  animation: turnFadeIn 2.2s ease forwards;
+}
+
+.turnAnimAvatar {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: var(--bg-elevated);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--accent);
+  border: 3px solid var(--accent);
+  animation: avatarPop .4s cubic-bezier(.34,1.56,.64,1) .1s both;
+}
+
+.turnAnimAvatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.turnAnimText {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text-primary);
+  text-align: center;
+  letter-spacing: -.01em;
+}

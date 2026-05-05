@@ -1,7 +1,7 @@
 import { useState, useCallback, useEffect, useMemo } from 'react'
 import { GAME_META } from './mock'
 import type { GameId, Player, RoomSummary, GameSettings } from '@game-platform/shared'
-import { useLobbySocket } from '../socket/useLobbySocket'
+import { useLobbySocket, getLobbySocket } from '../socket/useLobbySocket'
 import { usersApi, type FriendUser } from '../lib/usersApi'
 import { NotifBell } from '../components/NotifBell'
 import { DMWindow } from '../dm/DMWindow'
@@ -42,7 +42,7 @@ function JoinModal({ onClose, onJoin }: { onClose: () => void; onJoin: (code: st
 
 // ─── Create modal ─────────────────────────────────────────────────────────────
 
-const GAMES: GameId[] = ['quiz', 'skribble', 'loup_garou', 'blind_test', 'undercover']
+const GAMES: GameId[] = ['quiz', 'skribble', 'loup_garou', 'blind_test', 'undercover', 'smilelife']
 
 function CreateModal({ onClose, onCreate }: {
   onClose: () => void
@@ -58,7 +58,7 @@ function CreateModal({ onClose, onCreate }: {
         <div className={styles.gameGrid}>
           {GAMES.map((gid) => {
             const meta = GAME_META[gid]!
-            const available = gid === 'skribble'
+            const available = gid === 'skribble' || gid === 'smilelife'
             return (
               <button key={gid}
                 className={`${styles.gameOption} ${selectedGame === gid ? styles.gameOptionActive : ''}`}
@@ -108,7 +108,28 @@ export function LobbyPage({ onJoinRoom, onCreateRoom, onLogout, onViewProfile }:
   const username = user?.username ?? ''
 
   const [modal, setModal] = useState<'join' | 'create' | 'addFriend' | null>(null)
-  const [pendingGameCode, setPendingGameCode] = useState<string | null>(() => localStorage.getItem('gp_game_code'))
+  const [pendingGameCode, setPendingGameCode] = useState<string | null>(null)
+
+  // Vérifier que la room existe encore sur le serveur avant d'afficher le banner
+  useEffect(() => {
+    const code = localStorage.getItem('gp_game_code')
+    if (!code) return
+    // Vérifier via la liste des rooms ouvertes ou un ping
+    const socket = getLobbySocket(token ?? '')
+    if (!socket) { localStorage.removeItem('gp_game_code'); return }
+    const check = () => {
+      socket.emit('lobby:check-room' as any, { code }, (exists: boolean) => {
+        if (exists) {
+          setPendingGameCode(code)
+        } else {
+          localStorage.removeItem('gp_game_code')
+          setPendingGameCode(null)
+        }
+      })
+    }
+    if (socket.connected) check()
+    else socket.once('connect', check)
+  }, [token])
   const [mobileDrawer, setMobileDrawer] = useState(false)
   const isMobile = typeof window !== 'undefined' && window.innerWidth <= 480
   const navigate = useNavigate()
@@ -181,6 +202,7 @@ export function LobbyPage({ onJoinRoom, onCreateRoom, onLogout, onViewProfile }:
       : gameId === 'skribble' ? { gameId, rounds: 3, timePerRound: 60, wordCount: 4, language: 'fr' }
       : gameId === 'loup_garou' ? { gameId, dayDuration: 120, nightDuration: 30, roles: ['werewolf', 'seer'] }
       : gameId === 'blind_test' ? { gameId, rounds: 10, timePerTrack: 30, genres: [] }
+      : gameId === 'smilelife' ? { gameId: 'smilelife' }
       : { gameId: 'undercover', rounds: 5, timePerVote: 60 }
     onCreateRoom(gameId, maxPlayers, settings)
   }, [onCreateRoom])
@@ -271,6 +293,9 @@ export function LobbyPage({ onJoinRoom, onCreateRoom, onLogout, onViewProfile }:
           <span>Nonix Games</span>
         </div>
         <div className={styles.navRight}>
+          <button className={styles.rulesNavBtn} onClick={() => navigate('/rules')} title="Règles des jeux">
+            📖 Règles
+          </button>
           <button className={styles.msgNavBtn} onClick={() => navigate('/messages')} title="Messages">
             <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" strokeLinejoin="round"/></svg>
             {totalUnread > 0 && <span className={styles.msgNavBadge}>{totalUnread}</span>}

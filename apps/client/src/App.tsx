@@ -5,6 +5,8 @@ import { AuthProvider, useAuth } from './auth/AuthContext'
 import { LoadingScreen } from './components/LoadingScreen'
 import { NotFoundPage } from './components/NotFoundPage'
 import { MessagesPage } from './dm/MessagesPage'
+import { SmileLifeGame } from './games/smilelife/SmileLifeGame'
+import { RulesPage } from './rules/RulesPage'
 import { AuthPage } from './auth/AuthPage'
 import { LobbyPage } from './lobby/LobbyPage'
 import { RoomPage } from './room/RoomPage'
@@ -46,16 +48,11 @@ function AppShell() {
   const gameInfoRef = useRef<{ gameId: string; settings: any; code: string } | null>(null)
   const inGameRef = useRef(false)
 
-  // Maintenir la connexion lobby active sur toutes les pages + signaler la présence
+  // Maintenir la connexion lobby active sur toutes les pages
   useEffect(() => {
-    if (!token || !user?.id) return
-    const socket = getLobbySocket(token)
-    if (!socket) return
-    const doJoin = () => socket.emit('lobby:join' as any, { userId: user.id })
-    if (socket.connected) doJoin()
-    else socket.once('connect', doJoin)
-    return () => { socket.off('connect', doJoin) }
-  }, [token, user?.id])
+    if (!token) return
+    getLobbySocket(token) // init socket sans émettre lobby:join (géré par useLobbySocket)
+  }, [token])
 
   const { joinRoom, createRoom, leaveRoom, setReady, changeGame, sendMessage, startGame, kickPlayer } =
     useRoomSocket(token!, {
@@ -209,6 +206,7 @@ function AppShell() {
 
         {/* Messages */}
         <Route path="/messages" element={<MessagesPage />} />
+          <Route path="/rules" element={<RulesPage />} />
         {/* Messages avec conversation ouverte */}
         <Route path="/messages/:userId" element={<MessagesPage />} />
 
@@ -245,6 +243,15 @@ function GameRoute({ token, gameInfo, onLeave, isHost }: {
   }
   if (gameInfo.gameId === 'quiz') {
     return <QuizGame onLeave={onLeave} />
+  }
+  if (gameInfo.gameId === 'smilelife') {
+    return (
+      <SmileLifeGame
+        roomCode={gameInfo.code}
+        isHost={!!isHost}
+        onLeave={onLeave}
+      />
+    )
   }
   return <Navigate to="/" replace />
 }

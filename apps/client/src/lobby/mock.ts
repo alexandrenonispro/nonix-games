@@ -28,4 +28,5 @@ export const GAME_META: Record<string, { label: string; emoji: string; color: st
   loup_garou:  { label: 'Loup-garou', emoji: '🐺', color: '#a78bfa' },
   blind_test:  { label: 'Blind test', emoji: '🎵', color: '#fb923c' },
   undercover:  { label: 'Undercover', emoji: '🕵️', color: '#34d399' },
+  smilelife:   { label: 'Smile Life',  emoji: '😊', color: '#f59e0b' },
 }
