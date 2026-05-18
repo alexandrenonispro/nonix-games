@@ -389,6 +389,126 @@ const GAMES: Game[] = [
       },
     ],
   },
+  {
+    id: 'undercover',
+    name: 'Undercover',
+    emoji: '🕵️',
+    tagline: 'Bluffez, déduisez, survivez !',
+    sections: [
+      {
+        id: 'uc-but',
+        title: 'But du jeu',
+        content: (
+          <p>Undercover est un jeu de déduction sociale pour 4 à 20 joueurs. Une paire de mots proches est choisie par le serveur (ex : Chat / Chien). Les civils reçoivent le même mot, les undercovers reçoivent l'autre mot, et Mr. White ne reçoit rien. Personne ne sait qui est qui au début !</p>
+        ),
+      },
+      {
+        id: 'uc-roles',
+        title: 'Les 3 rôles',
+        content: (
+          <>
+            <div className={styles.cardRowList}>
+              <CardRow name="👤 Civil" tags={[{ label: 'majorité', color: '#16a34a' }, { label: 'mot A', color: '#15803d' }]} desc="Reçoit le mot des civils. Doit éliminer tous les undercovers et Mr. Whites sans se faire piéger." />
+              <CardRow name="🕵️ Undercover" tags={[{ label: '1 à 2', color: '#dc2626' }, { label: 'mot B', color: '#b91c1c' }]} desc="Reçoit un mot proche mais différent de celui des civils. Doit survivre en bluffant." />
+              <CardRow name="👻 Mr. White" tags={[{ label: '1 à 2', color: '#7c3aed' }, { label: 'aucun mot', color: '#6d28d9' }]} desc="Ne reçoit aucun mot. Doit bluffer et observer pour deviner le mot des civils." />
+            </div>
+            <div className={styles.infoBox}>
+              💡 Par défaut : 1 undercover + 1 Mr. White. À partir de 10 joueurs : 2 undercovers. À partir de 15 joueurs : 2 Mr. Whites.
+            </div>
+          </>
+        ),
+      },
+      {
+        id: 'uc-description',
+        title: 'Phase 1 — Description',
+        content: (
+          <>
+            <p className={styles.sectionIntro}>Un joueur aléatoire commence, puis chacun décrit son mot à tour de rôle.</p>
+            <ul className={styles.ruleList}>
+              <Rule>Chaque joueur décrit son mot en <strong>1 à 3 mots maximum</strong>.</Rule>
+              <Rule>Les descriptions sont visibles par tous en temps réel.</Rule>
+              <Rule>Mr. White doit bluffer sans connaître le vrai mot — il observe les autres pour deviner.</Rule>
+              <Rule>Soyez assez précis pour être crédible, mais pas trop pour ne pas trahir le mot exact.</Rule>
+            </ul>
+            <div className={styles.infoBox}>
+              ⚠️ Écrire le mot exact comme description est interdit — c'est trop facile !
+            </div>
+          </>
+        ),
+      },
+      {
+        id: 'uc-discussion',
+        title: 'Phase 2 — Discussion',
+        content: (
+          <>
+            <p className={styles.sectionIntro}>Un timer de 2 minutes est lancé. Les joueurs débattent librement.</p>
+            <ul className={styles.ruleList}>
+              <Rule>Analysez les descriptions : qui semble décrire un mot différent ?</Rule>
+              <Rule>Défendez-vous si vous êtes accusé.</Rule>
+              <Rule>L'hôte peut passer au vote avant la fin du timer.</Rule>
+            </ul>
+          </>
+        ),
+      },
+      {
+        id: 'uc-vote',
+        title: 'Phase 3 — Vote & Élimination',
+        content: (
+          <>
+            <p className={styles.sectionIntro}>Tous les joueurs encore en vie votent simultanément.</p>
+            <ul className={styles.ruleList}>
+              <Rule>Le joueur avec le plus de votes est <strong>éliminé</strong>.</Rule>
+              <Rule>En cas d'égalité, le joueur éliminé est choisi aléatoirement parmi les ex-aequo.</Rule>
+              <Rule>Les joueurs éliminés passent en <strong>mode spectateur</strong> et continuent de regarder.</Rule>
+              <Rule>Le rôle du joueur éliminé est révélé à l'élimination.</Rule>
+            </ul>
+          </>
+        ),
+      },
+      {
+        id: 'uc-mrwhite',
+        title: 'La chance de Mr. White',
+        content: (
+          <>
+            <p className={styles.sectionIntro}>Si le joueur éliminé est Mr. White, il a une chance unique !</p>
+            <ul className={styles.ruleList}>
+              <Rule>Mr. White peut tenter de <strong>deviner le mot des civils</strong>.</Rule>
+              <Rule>S'il devine correctement → <strong>victoire immédiate</strong> pour Mr. White !</Rule>
+              <Rule>S'il se trompe ou renonce → la partie continue normalement.</Rule>
+            </ul>
+          </>
+        ),
+      },
+      {
+        id: 'uc-victoire',
+        title: 'Conditions de victoire',
+        content: (
+          <>
+            <div className={styles.cardRowList}>
+              <CardRow name="👤 Civils gagnent" tags={[{ label: '✓ victoire', color: '#16a34a' }]} desc="Quand tous les undercovers ET tous les Mr. Whites sont éliminés." />
+              <CardRow name="🕵️ Undercovers gagnent" tags={[{ label: '✓ victoire', color: '#dc2626' }]} desc="S'ils survivent jusqu'à ce qu'il ne reste plus qu'un seul civil en vie." />
+              <CardRow name="👻 Mr. White gagne" tags={[{ label: '✓ victoire', color: '#7c3aed' }]} desc="S'il survit jusqu'à la fin (comme les undercovers), OU s'il devine correctement le mot des civils lors de son élimination." />
+            </div>
+            <div className={styles.infoBox}>
+              🔄 Si aucune condition n'est remplie après l'élimination, un nouveau cycle des 3 phases recommence !
+            </div>
+          </>
+        ),
+      },
+      {
+        id: 'uc-conseils',
+        title: 'Stratégies & conseils',
+        content: (
+          <ul className={styles.ruleList}>
+            <Rule><strong>Civil :</strong> Soyez assez précis pour convaincre les autres civils, mais pas trop pour ne pas trahir le mot à l'undercover. Écoutez les autres descriptions pour détecter les incohérences.</Rule>
+            <Rule><strong>Undercover :</strong> Écoutez attentivement les descriptions des civils pour deviner leur mot. Restez vague et adaptez votre description pour paraître civil.</Rule>
+            <Rule><strong>Mr. White :</strong> Proposez des descriptions très génériques qui pourraient correspondre à n'importe quel thème. Observez tout pour deviner le mot si vous êtes éliminé.</Rule>
+            <Rule>Un mot trop précis peut trahir un civil... un mot trop vague peut trahir un infiltré !</Rule>
+          </ul>
+        ),
+      },
+    ],
+  },
 ]
 
 // ─── Composant principal ──────────────────────────────────────────────────────

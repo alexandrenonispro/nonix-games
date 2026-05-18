@@ -1,5 +1,6 @@
 import { DrawnixGame } from '../../games/drawnix/DrawnixGame.js'
 import { handleSmileLife, cleanupSmileLife, clearAllSmileLifeGames } from '../../games/smilelife/handlers.js'
+import { handleUndercover, cleanupUndercover } from '../../games/undercover/handlers.js'
 import type { Namespace, Socket } from 'socket.io'
 import { store } from '../../lib/store.js'
 import { generateRoomCode } from '../../lib/room-code.js'
@@ -256,6 +257,10 @@ export function registerRoomHandlers(roomNS: Namespace, socket: Socket) {
       socket.emit('room:error', { code: 'NOT_ALL_READY', message: 'Tous les joueurs ne sont pas prêts.' })
       return
     }
+    if (room.gameId === 'undercover' && room.members.size < 4) {
+      socket.emit('room:error', { code: 'NOT_ENOUGH_PLAYERS', message: 'Undercover nécessite au moins 4 joueurs.' })
+      return
+    }
 
     room.status = 'starting'
     let count = 3
@@ -292,6 +297,9 @@ export function registerRoomHandlers(roomNS: Namespace, socket: Socket) {
   // ── SmileLife handlers (toujours actifs, vérifient gameId eux-mêmes) ─────────
   handleSmileLife(roomNS.server, socket, roomNS, user)
 
+  // ── Undercover handlers ────────────────────────────────────────────────────
+  handleUndercover(roomNS, socket, user)
+
   // ── Game actions ──────────────────────────────────────────────────────────────
 
   socket.on('game:action' as any, (action: { type: string; data: any }) => {
@@ -301,11 +309,12 @@ export function registerRoomHandlers(roomNS: Namespace, socket: Socket) {
     console.log(`[room] game:action ${action.type} from ${user.username}`)
 
     // ── Fermeture de partie (tous jeux) ─────────────────────────────────────
-    if (action.type === 'drawnix:close-game' || action.type === 'smilelife:close-game') {
+    if (action.type === 'drawnix:close-game' || action.type === 'smilelife:close-game' || action.type === 'undercover:close') {
       if (room.hostId !== user.id) return
       const game = gameInstances.get(room.code)
       if (game) { game.cleanup(); gameInstances.delete(room.code) }
       cleanupSmileLife(room.code)
+      cleanupUndercover(room.code)
       for (const m of Array.from(room.members.values())) {
         const s = roomNS.sockets.get(m.socketId)
         if (s) {

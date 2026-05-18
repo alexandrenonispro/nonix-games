@@ -245,11 +245,15 @@ export function RoomPage({ token, initialState, onLeave, onGameStart, setReady, 
                 </div>
                 <span className={styles.readyProgressLabel}><span className={styles.readyCountDesktop}>{readyCount}/{members.length} prêts</span><span className={styles.readyCountMobile}>{readyCount}/{members.length} ✓</span></span>
               </div>
-              <button className={styles.launchBtn} disabled={!allReady}
-                style={!allReady ? { opacity: 0.4, cursor: 'not-allowed' } : {}}
+              <button className={styles.launchBtn}
+                disabled={!allReady || (room?.gameId === 'undercover' && members.length < 4)}
+                style={(!allReady || (room?.gameId === 'undercover' && members.length < 4)) ? { opacity: 0.4, cursor: 'not-allowed' } : {}}
+                title={room?.gameId === 'undercover' && members.length < 4 ? `Undercover nécessite 4 joueurs minimum (${members.length}/4)` : ''}
                 onClick={startGame}>
                 <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
-                Lancer la partie
+                {room?.gameId === 'undercover' && members.length < 4
+                  ? `Undercover — ${members.length}/4 joueurs`
+                  : 'Lancer la partie'}
               </button>
             </div>
           ) : (

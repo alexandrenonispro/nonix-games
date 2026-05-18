@@ -58,7 +58,7 @@ function CreateModal({ onClose, onCreate }: {
         <div className={styles.gameGrid}>
           {GAMES.map((gid) => {
             const meta = GAME_META[gid]!
-            const available = gid === 'skribble' || gid === 'smilelife'
+            const available = gid === 'skribble' || gid === 'smilelife' || gid === 'undercover'
             return (
               <button key={gid}
                 className={`${styles.gameOption} ${selectedGame === gid ? styles.gameOptionActive : ''}`}
@@ -80,7 +80,7 @@ function CreateModal({ onClose, onCreate }: {
         <p className={styles.modalLabel}>
           Joueurs max — <span style={{ color: 'var(--accent)', fontFamily: 'var(--font-mono)' }}>{maxPlayers}</span>
         </p>
-        <input type="range" min={2} max={15} value={maxPlayers}
+        <input type="range" min={selectedGame === 'undercover' ? 4 : 2} max={selectedGame === 'undercover' ? 20 : 15} value={maxPlayers}
           onChange={(e) => setMaxPlayers(Number(e.target.value))} className={styles.slider} />
         <div className={styles.modalActions}>
           <button className={styles.btnSecondary} onClick={onClose}>Annuler</button>

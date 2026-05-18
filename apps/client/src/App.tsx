@@ -6,6 +6,7 @@ import { LoadingScreen } from './components/LoadingScreen'
 import { NotFoundPage } from './components/NotFoundPage'
 import { MessagesPage } from './dm/MessagesPage'
 import { SmileLifeGame } from './games/smilelife/SmileLifeGame'
+import { UndercoverGame } from './games/undercover/UndercoverGame'
 import { RulesPage } from './rules/RulesPage'
 import { AdminPage } from './admin/AdminPage'
 import { AuthPage } from './auth/AuthPage'
@@ -47,6 +48,7 @@ function AppShell() {
   })
   const [gameInfo, setGameInfo] = useState<{ gameId: string; settings: any; code: string } | null>(null)
   const gameInfoRef = useRef<{ gameId: string; settings: any; code: string } | null>(null)
+  const membersRef = useRef<any[]>([])
   const inGameRef = useRef(false)
 
   // Maintenir la connexion lobby active sur toutes les pages
@@ -61,6 +63,7 @@ function AppShell() {
         setReconnecting(false)
         sessionStorage.setItem(ROOM_KEY, room.code)
         setInitialRoomState({ room, members, chat })
+        membersRef.current = members
         const info = { gameId: room.gameId, settings: room.settings, code: room.code }
         setGameInfo(info)
         gameInfoRef.current = info
@@ -201,6 +204,8 @@ function AppShell() {
                 gameInfo={gameInfoRef.current ?? gameInfo!}
                 onLeave={handleLeaveRoom}
                 isHost={initialRoomState?.room.hostId === user?.id}
+                user={user}
+                members={membersRef.current.length > 0 ? membersRef.current : (initialRoomState?.members ?? [])}
               />
             : <Navigate to="/" replace />
         } />
@@ -226,11 +231,13 @@ function ProfileRoute() {
   return <ProfilePage userId={userId} onBack={() => navigate(-1)} />
 }
 
-function GameRoute({ token, gameInfo, onLeave, isHost }: {
+function GameRoute({ token, gameInfo, onLeave, isHost, user, members = [] }: {
   token: string
   gameInfo: { gameId: string; settings: any; code: string }
   onLeave: () => void
   isHost?: boolean
+  user?: any
+  members?: any[]
 }) {
   if (gameInfo.gameId === 'skribble') {
     return (
@@ -252,6 +259,19 @@ function GameRoute({ token, gameInfo, onLeave, isHost }: {
         roomCode={gameInfo.code}
         isHost={!!isHost}
         onLeave={onLeave}
+      />
+    )
+  }
+  if (gameInfo.gameId === 'undercover') {
+    return (
+      <UndercoverGame
+        roomCode={gameInfo.code}
+        myId={user?.id ?? ''}
+        token={token}
+        players={members.map((m: any) => ({ id: m.id, username: m.username, avatarUrl: m.avatarUrl ?? null }))}
+        isHost={!!isHost}
+        onLeave={onLeave}
+        socket={getRoomSocket(token)}
       />
     )
   }

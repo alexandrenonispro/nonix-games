@@ -132,10 +132,60 @@ const SMILELIFE_SECTIONS: RuleSection[] = [
   },
 ]
 
+
+const UNDERCOVER_SECTIONS: RuleSection[] = [
+  {
+    title: '🎯 But du jeu',
+    content: <p>Trouvez les infiltrés avant d'être mis en minorité. Civils, Undercovers et Mr. White ont chacun leur stratégie !</p>,
+  },
+  {
+    title: '👥 Les rôles',
+    content: (
+      <ul className={styles.ul}>
+        <Li><strong style={{ color: '#16a34a' }}>👤 Civil</strong> : reçoit le mot A, doit éliminer les infiltrés</Li>
+        <Li><strong style={{ color: '#dc2626' }}>🕵️ Undercover</strong> : reçoit le mot B (proche), doit survivre</Li>
+        <Li><strong style={{ color: '#7c3aed' }}>👻 Mr. White</strong> : aucun mot, doit bluffer</Li>
+      </ul>
+    ),
+  },
+  {
+    title: '🔄 Déroulement',
+    content: (
+      <ol className={styles.ol}>
+        <li><strong>Description</strong> — chacun décrit son mot en 1-3 mots</li>
+        <li><strong>Discussion</strong> — 2min pour débattre</li>
+        <li><strong>Vote</strong> — le plus voté est éliminé</li>
+        <li>Répéter jusqu'à la victoire d'un camp</li>
+      </ol>
+    ),
+  },
+  {
+    title: '👻 Mr. White éliminé',
+    content: (
+      <ul className={styles.ul}>
+        <Li>Peut tenter de <strong>deviner le mot des civils</strong></Li>
+        <Li>Bonne réponse = <strong>victoire immédiate</strong></Li>
+        <Li>Mauvaise réponse = la partie continue</Li>
+      </ul>
+    ),
+  },
+  {
+    title: '🏆 Victoires',
+    content: (
+      <ul className={styles.ul}>
+        <Li><strong>Civils</strong> : éliminent tous les infiltrés</Li>
+        <Li><strong>Undercovers</strong> : survivent jusqu'à 1 seul civil restant</Li>
+        <Li><strong>Mr. White</strong> : survit, OU devine le bon mot</Li>
+      </ul>
+    ),
+  },
+]
+
 const RULES: Record<string, { title: string; emoji: string; sections: RuleSection[] }> = {
   drawnix:   { title: 'Drawnix',    emoji: '🎨', sections: DRAWNIX_SECTIONS },
   skribble:  { title: 'Drawnix',    emoji: '🎨', sections: DRAWNIX_SECTIONS },
-  smilelife: { title: 'Smile Life', emoji: '😊', sections: SMILELIFE_SECTIONS },
+  smilelife:  { title: 'Smile Life', emoji: '😊', sections: SMILELIFE_SECTIONS },
+  undercover: { title: 'Undercover',  emoji: '🕵️', sections: UNDERCOVER_SECTIONS },
 }
 
 // ─── Composant ────────────────────────────────────────────────────────────────

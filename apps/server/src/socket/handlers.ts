@@ -1,5 +1,7 @@
 import { DrawnixGame } from '../../games/drawnix/DrawnixGame.js'
 import { handleSmileLife, cleanupSmileLife, clearAllSmileLifeGames } from '../../games/smilelife/handlers.js'
+import { handleUndercover, cleanupUndercover, setUndercoverGame, getUndercoverGame } from '../../games/undercover/handlers.js'
+import { UndercoverGame } from '../../games/undercover/UndercoverGame.js'
 import type { Namespace, Socket } from 'socket.io'
 import { store } from '../../lib/store.js'
 import { generateRoomCode } from '../../lib/room-code.js'
@@ -26,6 +28,7 @@ function roomToDTO(room: ReturnType<typeof store.get>) {
 const reconnecting = new Set<string>()
 // Instances de jeu actives par room
 const gameInstances = new Map<string, DrawnixGame>()
+const undercoverInstances = new Map<string, UndercoverGame>()
 
 // Appelé au démarrage du serveur pour nettoyer les parties en cours
 export function clearAllGames() {
@@ -256,6 +259,10 @@ export function registerRoomHandlers(roomNS: Namespace, socket: Socket) {
       socket.emit('room:error', { code: 'NOT_ALL_READY', message: 'Tous les joueurs ne sont pas prêts.' })
       return
     }
+    if (room.gameId === 'undercover' && room.members.size < 4) {
+      socket.emit('room:error', { code: 'NOT_ENOUGH_PLAYERS', message: 'Undercover nécessite au moins 4 joueurs.' })
+      return
+    }
 
     room.status = 'starting'
     let count = 3
@@ -289,8 +296,20 @@ export function registerRoomHandlers(roomNS: Namespace, socket: Socket) {
     }, 1000)
   })
 
-  // ── SmileLife handlers (toujours actifs, vérifient gameId eux-mêmes) ─────────
+  // ── SmileLife handlers ────────────────────────────────────────────────────────
   handleSmileLife(roomNS.server, socket, roomNS, user)
+
+  // ── Undercover handlers ───────────────────────────────────────────────────────
+  handleUndercover(roomNS, socket, user)
+
+  // Renvoyer l'état undercover si le joueur rejoint une partie en cours
+  socket.on('undercover:request-state', ({ roomCode }: { roomCode?: string } = {}) => {
+    const room = store.getRoomBySocket(socket.id) ?? (roomCode ? store.get(roomCode) : null)
+    if (!room) { console.log('[undercover] request-state: room not found for', socket.id, roomCode); return }
+    const game = undercoverInstances.get(room.code)
+    console.log('[undercover] request-state roomCode:', room.code, 'game found:', !!game)
+    if (game) socket.emit('undercover:state', game.state)
+  })
 
   // ── Game actions ──────────────────────────────────────────────────────────────
 
@@ -308,12 +327,14 @@ export function registerRoomHandlers(roomNS: Namespace, socket: Socket) {
     if (action.type === 'drawnix:snapshot') {
       game.receiveSnapshot((action.data as any).turnIndex, (action.data as any).canvasData)
     }
-    if (action.type === 'drawnix:close-game' || action.type === 'smilelife:close-game') {
+    if (action.type === 'drawnix:close-game' || action.type === 'smilelife:close-game' || action.type === 'undercover:close') {
       // Seul l'hôte peut fermer la partie
       if (room.hostId !== user.id) return
       game.cleanup()
       gameInstances.delete(room.code)
       cleanupSmileLife(room.code)
+      cleanupUndercover(room.code)
+      undercoverInstances.delete(room.code)
       // Kicker tout le monde
       for (const m of Array.from(room.members.values())) {
         const s = roomNS.sockets.get(m.socketId)
