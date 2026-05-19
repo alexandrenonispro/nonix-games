@@ -1,0 +1,51 @@
+.toast {
+  position: fixed;
+  top: 24px;
+  right: 24px;
+  background: var(--bg-surface);
+  border: 1.5px solid var(--accent);
+  border-radius: var(--radius-lg);
+  padding: 14px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  z-index: 9999;
+  min-width: 200px;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.12);
+  transition: opacity .4s ease, transform .4s ease;
+}
+
+.toastVisible { opacity: 1; transform: translateY(0); }
+.toastHidden  { opacity: 0; transform: translateY(-12px); pointer-events: none; }
+
+.xpRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.xpIcon { font-size: 20px; }
+
+.xpGained {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--accent);
+}
+
+.levelUp {
+  font-size: 15px;
+  font-weight: 700;
+  color: #f59e0b;
+}
+
+.rankUp {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.xpTotal {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}

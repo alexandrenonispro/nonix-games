@@ -17,6 +17,7 @@ import { DrawnixGame } from './games/drawnix/DrawnixGame'
 import { ProfilePage } from './profile/ProfilePage'
 import { useRoomSocket, getRoomSocket } from './socket/useRoomSocket'
 import { getLobbySocket } from './socket/useLobbySocket'
+import { XpNotification } from './components/XpNotification'
 import type { Room, RoomMember, Message } from '@game-platform/shared'
 
 const ROOM_KEY = 'gp_room_code'
@@ -165,6 +166,7 @@ function AppShell() {
         </div>
       )}
 
+      <XpNotification socket={getRoomSocket(token!)} />
       <Routes>
         {/* Lobby */}
         <Route path="/" element={

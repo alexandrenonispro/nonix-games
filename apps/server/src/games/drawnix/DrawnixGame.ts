@@ -1,4 +1,5 @@
 import { prisma } from '../../lib/prisma.js'
+import { updatePlayerStats } from '../../lib/updateStats.js'
 import { store } from '../../lib/store.js'
 import type { Namespace } from 'socket.io'
 import type { ServerMember } from '../../lib/store.js'
@@ -445,6 +446,13 @@ export class DrawnixGame {
         },
       })
       console.log(`[drawnix] history saved for room ${this.roomCode}`)
+      // Mise à jour des stats
+      await updatePlayerStats('skribble', rankings.map((r, i) => ({
+        userId: r.id,
+        rank: r.rank,
+        isWinner: r.rank === 1,
+        totalPlayers: rankings.length,
+      })))
     } catch (err) {
       console.error('[drawnix] failed to save history:', err)
     }

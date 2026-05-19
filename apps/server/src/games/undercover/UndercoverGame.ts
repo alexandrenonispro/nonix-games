@@ -1,4 +1,7 @@
 import { WORD_PAIRS } from './words.js'
+import { prisma } from '../../lib/prisma.js'
+import type { Namespace } from 'socket.io'
+import { updatePlayerStats } from '../../lib/updateStats.js'
 
 export type Role = 'civil' | 'undercover' | 'mrwhite'
 export type Phase = 'description' | 'discussion' | 'vote' | 'mrwhite-guess' | 'ended'
@@ -17,6 +20,7 @@ export interface UndercoverPlayer {
 }
 
 export interface UndercoverState {
+  startedAt: string
   phase: Phase
   players: UndercoverPlayer[]
   civilWord: string
@@ -36,7 +40,11 @@ export interface UndercoverState {
 export class UndercoverGame {
   state: UndercoverState
 
-  constructor(players: { id: string; username: string; avatarUrl: string | null }[]) {
+  private roomCode: string
+  private roomNS?: Namespace
+  constructor(roomCode: string, players: { id: string; username: string; avatarUrl: string | null }[], roomNS?: Namespace) {
+    this.roomCode = roomCode
+    this.roomNS = roomNS
     const n = players.length
     // Nombre d'undercovers et Mr. Whites selon le nombre de joueurs
     const numUndercover = n >= 10 ? 2 : 1
@@ -81,6 +89,7 @@ export class UndercoverGame {
       winner: null,
       winnerIds: [],
       eliminatedThisRound: null,
+      startedAt: new Date().toISOString(),
       log: ['La partie commence ! Phase de description.'],
       mrWhiteGuessPlayerId: null,
       allDescriptions: [],
@@ -202,6 +211,8 @@ export class UndercoverGame {
       s.winner = 'mrwhite'
       s.winnerIds = s.players.filter(p => p.role === 'mrwhite').map(p => p.id)
       s.log.push('Mr. White a deviné le mot ! Les Mr. Whites gagnent !')
+      this.saveHistory()
+      this.saveStats()
     } else {
       s.mrWhiteGuessPlayerId = null
       if (!this.checkWinCondition()) {
@@ -209,6 +220,49 @@ export class UndercoverGame {
       }
     }
     return { ok: true, correct }
+  }
+
+  private async saveHistory() {
+    const s = this.state
+    try {
+      await prisma.undercoverHistory.create({
+        data: {
+          roomCode: this.roomCode,
+          startedAt: new Date(s.startedAt),
+          endedAt: new Date(),
+          winner: s.winner ?? 'civils',
+          civilWord: s.civilWord,
+          undercoverWord: s.undercoverWord,
+          rounds: s.round,
+          players: s.players.map(p => ({
+            userId: p.id,
+            username: p.username,
+            avatarUrl: p.avatarUrl,
+            role: p.role,
+            word: p.word,
+            isEliminated: p.isEliminated,
+            isWinner: s.winnerIds.includes(p.id),
+            descriptions: (s.allDescriptions ?? [])
+              .filter(d => d.playerId === p.id)
+              .map(d => ({ round: d.round, text: d.description })),
+          })),
+        },
+      })
+    } catch (err) {
+      console.error('[undercover] failed to save history:', err)
+    }
+  }
+
+  private async saveStats() {
+    const s = this.state
+    const infiltreWin = s.winner === 'undercover' || s.winner === 'mrwhite'
+    await updatePlayerStats('undercover', s.players.map((p, i) => ({
+      userId: p.id,
+      rank: s.winnerIds.includes(p.id) ? 1 : 2,
+      isWinner: s.winnerIds.includes(p.id),
+      totalPlayers: s.players.length,
+      isInfiltreWin: infiltreWin && (p.role === 'undercover' || p.role === 'mrwhite') && s.winnerIds.includes(p.id),
+    })), this.roomNS, this.roomCode).catch(e => console.error('[undercover] stats error:', e))
   }
 
   checkWinCondition(): boolean {
@@ -224,6 +278,8 @@ export class UndercoverGame {
       s.winner = 'civils'
       s.winnerIds = s.players.filter(p => p.role === 'civil').map(p => p.id)
       s.log.push('Tous les infiltrés sont éliminés ! Les civils gagnent !')
+      this.saveHistory()
+      this.saveStats()
       return true
     }
 
@@ -234,6 +290,8 @@ export class UndercoverGame {
       s.winner = activeUndercovers.length > 0 ? 'undercover' : 'mrwhite'
       s.winnerIds = infiltres.map(p => p.id)
       s.log.push('Les infiltrés ont survécu ! Ils gagnent !')
+      this.saveHistory()
+      this.saveStats()
       return true
     }
 

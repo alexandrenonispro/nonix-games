@@ -215,7 +215,50 @@ usersRouter.get('/:id/history', requireAuth, async (req: any, res) => {
       })
     )
     const histories2 = historiesWithTurns
-    return res.json({ histories: histories2 })
+
+    // Récupérer aussi l'historique Undercover
+    const undercoverHistories = await prisma.$queryRaw`
+      SELECT id, room_code as "roomCode", started_at as "startedAt",
+             ended_at as "endedAt", winner, civil_word as "civilWord",
+             undercover_word as "undercoverWord", players, rounds
+      FROM undercover_history
+      WHERE players::jsonb @> ${JSON.stringify([{ userId: id }])}::jsonb
+      ORDER BY ended_at DESC
+      LIMIT 20
+    `
+
+    // Normaliser le format Undercover pour GameHistory
+    const undercoverFormatted = (undercoverHistories as any[]).map((h: any) => ({
+      id: h.id,
+      roomCode: h.roomCode,
+      startedAt: h.startedAt,
+      endedAt: h.endedAt,
+      gameId: 'undercover',
+      settings: {
+        durationMs: new Date(h.endedAt).getTime() - new Date(h.startedAt).getTime(),
+      },
+      winner: h.winner,
+      civilWord: h.civilWord,
+      undercoverWord: h.undercoverWord,
+      rounds: h.rounds,
+      players: h.players,
+      rankings: (h.players as any[]).map((p: any, i: number) => ({
+        userId: p.userId,
+        username: p.username,
+        avatarUrl: p.avatarUrl,
+        role: p.role,
+        isWinner: p.isWinner,
+        rank: p.isWinner ? 1 : 2,
+        score: 0,
+      })),
+      turns: [],
+    }))
+
+    // Fusionner et trier par date
+    const allHistories = [...histories2, ...undercoverFormatted]
+      .sort((a: any, b: any) => new Date(b.endedAt).getTime() - new Date(a.endedAt).getTime())
+
+    return res.json({ histories: allHistories })
   } catch (err) {
     console.error('[history] error:', err)
     return res.status(500).json({ error: 'Erreur serveur' })

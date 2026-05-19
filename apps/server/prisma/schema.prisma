@@ -102,6 +102,7 @@ model UserStat {
   gameId      String @map("game_id")
   gamesPlayed Int    @default(0) @map("games_played")
   gamesWon    Int    @default(0) @map("games_won")
+  winRate     Float  @default(0) @map("win_rate")
   totalScore  Int    @default(0) @map("total_score")
   bestScore   Int    @default(0) @map("best_score")
 
@@ -241,6 +242,20 @@ model CardConfig {
 
   @@unique([gameId, cardType])
   @@map("card_configs")
+}
+
+model UndercoverHistory {
+  id          String   @id @default(uuid())
+  roomCode    String   @map("room_code")
+  startedAt   DateTime @map("started_at")
+  endedAt     DateTime @default(now()) @map("ended_at")
+  winner      String   // 'civils' | 'undercover' | 'mrwhite'
+  civilWord   String   @map("civil_word")
+  undercoverWord String @map("undercover_word")
+  players     Json     // [{ userId, username, avatarUrl, role, word, isEliminated, descriptions: [{round, text}] }]
+  rounds      Int
+
+  @@map("undercover_history")
 }
 
 // ─── Enums ────────────────────────────────────────────────────────────────────

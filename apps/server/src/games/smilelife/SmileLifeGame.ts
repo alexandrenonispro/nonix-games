@@ -1,3 +1,5 @@
+import { updatePlayerStats } from '../../lib/updateStats.js'
+import type { Namespace } from 'socket.io'
 import { buildDeck, shuffle, type Card, type MalusType } from './cards.js'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -117,9 +119,13 @@ function isWorker(board: PlayerBoard): boolean {
 // ─── SmileLifeGame ────────────────────────────────────────────────────────────
 
 export class SmileLifeGame {
+  private roomCode: string
+  private roomNS: Namespace
   private state: SmileLifeState
 
-  constructor(players: { id: string; username: string; avatarUrl: string | null }[]) {
+  constructor(roomCode: string, roomNS: Namespace, players: { id: string; username: string; avatarUrl: string | null }[]) {
+    this.roomCode = roomCode
+    this.roomNS = roomNS
     const deck = shuffle(buildDeck())
     const hand5 = (d: Card[]) => d.splice(0, 5)
 
@@ -965,6 +971,9 @@ export class SmileLifeGame {
     const scoreStr = scores.map(p => `${p.username}: ${p.score} smiles`).join(' | ')
     events.push(`🏁 Fin de partie ! ${scoreStr}`)
     this.log(`Fin de partie ! Gagnant : ${scores[0]!.username} avec ${scores[0]!.score} smiles.`)
+    updatePlayerStats('smilelife', scores.map((p, i) => ({
+      userId: p.id, rank: i + 1, isWinner: i === 0, totalPlayers: scores.length,
+    })), this.roomNS, this.roomCode).catch((e: any) => console.error('[smilelife] stats error:', e))
     return { ok: true as const, events }
   }
 

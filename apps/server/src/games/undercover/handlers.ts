@@ -53,7 +53,7 @@ export function handleUndercover(
 
     if (players.length < 4) { socket.emit('undercover:error', { reason: 'Il faut au moins 4 joueurs.' }); return }
 
-    const game = new UndercoverGame(players)
+    const game = new UndercoverGame(roomCode, players, roomNS)
     games.set(roomCode, game)
     broadcastState(roomCode, game)
   })

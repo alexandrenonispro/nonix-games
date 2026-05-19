@@ -141,7 +141,7 @@ export function UndercoverGame({ myId, socket, isHost, onLeave }: Props) {
     const rounds = Array.from(byRound.keys()).sort()
 
     return (
-      <div className={styles.root}>
+      <div className={styles.root} style={{ overflowY: 'auto' }}>
         <div className={styles.endScreen}>
           <div className={styles.endTitle}>
             {state.winner === 'civils' && '🏆 Les Civils gagnent !'}
