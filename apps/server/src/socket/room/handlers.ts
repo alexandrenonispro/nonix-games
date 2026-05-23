@@ -1,5 +1,5 @@
 import { DrawnixGame } from '../../games/drawnix/DrawnixGame.js'
-import { handleSmileLife, cleanupSmileLife, clearAllSmileLifeGames } from '../../games/smilelife/handlers.js'
+import { handleSmileLife, cleanupSmileLife } from '../../games/smilelife/handlers.js'
 import { handleUndercover, cleanupUndercover } from '../../games/undercover/handlers.js'
 import type { Namespace, Socket } from 'socket.io'
 import { store } from '../../lib/store.js'
@@ -27,12 +27,6 @@ function roomToDTO(room: ReturnType<typeof store.get>) {
 const reconnecting = new Set<string>()
 // Instances de jeu actives par room
 const gameInstances = new Map<string, DrawnixGame>()
-
-// Appelé au démarrage du serveur pour nettoyer les parties en cours
-export function clearAllGames() {
-  gameInstances.clear()
-  clearAllSmileLifeGames()
-}
 
 export function registerRoomHandlers(roomNS: Namespace, socket: Socket) {
   const user = socket.data.user
@@ -294,6 +288,7 @@ export function registerRoomHandlers(roomNS: Namespace, socket: Socket) {
     }, 1000)
   })
 
+  // ── SmileLife handlers ───────────────────────────────────────────────────────
   // ── SmileLife handlers (toujours actifs, vérifient gameId eux-mêmes) ─────────
   handleSmileLife(roomNS.server, socket, roomNS, user)
 
@@ -306,16 +301,15 @@ export function registerRoomHandlers(roomNS: Namespace, socket: Socket) {
     const room = store.getRoomBySocket(socket.id)
     if (!room) return
 
-    console.log(`[room] game:action ${action.type} from ${user.username}`)
-
-    // ── Fermeture de partie (tous jeux) ─────────────────────────────────────
+    // ── Fermeture de partie (tous jeux) — avant le check game ────────────────
     if (action.type === 'drawnix:close-game' || action.type === 'smilelife:close-game' || action.type === 'undercover:close') {
       if (room.hostId !== user.id) return
-      const game = gameInstances.get(room.code)
-      if (game) { game.cleanup(); gameInstances.delete(room.code) }
+      const drawnixGame = gameInstances.get(room.code)
+      if (drawnixGame) { drawnixGame.cleanup(); gameInstances.delete(room.code) }
       cleanupSmileLife(room.code)
       cleanupUndercover(room.code)
       for (const m of Array.from(room.members.values())) {
+        if (m.id === user.id) continue
         const s = roomNS.sockets.get(m.socketId)
         if (s) {
           s.emit('room:kicked' as any, { reason: "L'hôte a fermé la partie." })
@@ -327,11 +321,14 @@ export function registerRoomHandlers(roomNS: Namespace, socket: Socket) {
       socket.emit('room:room-closed' as any)
       store.delete(room.code)
       roomNS.server.of('/lobby').to('lobby-general').emit('lobby:room-closed' as any, { code: room.code })
+      console.log('[room] host closed game in room', room.code)
       return
     }
 
     const game = gameInstances.get(room.code)
     if (!game) return
+
+    console.log(`[room] game:action ${action.type} from ${user.username}`)
 
     if (action.type === 'drawnix:choose-word') {
       game.chooseWord(user.id, (action.data as any).word)

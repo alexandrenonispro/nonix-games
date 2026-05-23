@@ -30,7 +30,6 @@ export interface Card {
   childName?: string
   // Acquisition
   cost?: number         // nb liasses pour acheter
-  costMarried?: number  // prix réduit si marié
   // Malus
   malusType?: MalusType
   // Spéciale
@@ -53,14 +52,18 @@ function repeat(n: number, base: Omit<Card, 'id'>): Card[] {
 export function buildDeck(): Card[] {
   const deck: Card[] = []
 
-  // ── ÉTUDES (22 simples Niv.1 + 3 doubles Niv.2) ─────────────────────────────
-  for (let i = 0; i < 22; i++) {
-    deck.push(card({ category: 'etude', name: 'Études', smiles: 1, level: 1 }))
+  // ── ÉTUDES (22 simples + 3 doubles) ─────────────────────────────────────────
+  const etudeNames = ['Primaire', 'Collège', 'Lycée', 'BTS / DUT', 'Licence', 'Master / Ingénieur']
+  for (let lvl = 1; lvl <= 6; lvl++) {
+    const count = lvl <= 3 ? 4 : lvl <= 5 ? 3 : 2
+    for (let i = 0; i < count; i++) {
+      deck.push(card({ category: 'etude', name: etudeNames[lvl - 1]!, smiles: 1, level: lvl }))
+    }
   }
-  // 3 doubles — valident 2 niveaux d'un coup
-  for (let i = 0; i < 3; i++) {
-    deck.push(card({ category: 'etude', name: 'Études (double)', smiles: 1, level: 2, isDouble: true }))
-  }
+  // 3 doubles — couvrent niveaux 1+2, 2+3, 3+4
+  deck.push(card({ category: 'etude', name: 'Double Études Niv.1-2', smiles: 2, level: 2, isDouble: true }))
+  deck.push(card({ category: 'etude', name: 'Double Études Niv.2-3', smiles: 2, level: 3, isDouble: true }))
+  deck.push(card({ category: 'etude', name: 'Double Études Niv.3-4', smiles: 2, level: 4, isDouble: true }))
 
   // ── MÉTIERS (30) ─────────────────────────────────────────────────────────────
   const metiers: Omit<Card, 'id' | 'category' | 'smiles'>[] = [
@@ -81,8 +84,8 @@ export function buildDeck(): Card[] {
     { name: 'Jardinier',        studiesRequired: 1, maxSalary: 1, statut: 'interimaire', metierEffect: null },
     { name: 'Journaliste',      studiesRequired: 3, maxSalary: 2, statut: null,          metierEffect: 'journaliste' },
     { name: 'Médecin',          studiesRequired: 6, maxSalary: 4, statut: null,          metierEffect: 'medecin' },
-    { name: 'Médium',           studiesRequired: 0, maxSalary: 1, statut: null,          metierEffect: 'medium' },
-    { name: 'Militaire',        studiesRequired: 0, maxSalary: 1, statut: 'fonctionnaire', metierEffect: 'militaire' },
+    { name: 'Médium',           studiesRequired: 0, maxSalary: 2, statut: null,          metierEffect: 'medium' },
+    { name: 'Militaire',        studiesRequired: 2, maxSalary: 2, statut: 'fonctionnaire', metierEffect: 'militaire' },
     { name: 'Pharmacien',       studiesRequired: 5, maxSalary: 3, statut: null,          metierEffect: 'pharmacien' },
     { name: 'Pilote de Ligne',  studiesRequired: 5, maxSalary: 4, statut: null,          metierEffect: 'pilote' },
     { name: 'Pizzaïolo',        studiesRequired: 0, maxSalary: 1, statut: 'interimaire', metierEffect: null },
@@ -148,24 +151,23 @@ export function buildDeck(): Card[] {
 
   // ── VOYAGES (5) ──────────────────────────────────────────────────────────────
   const voyages = [
-    { name: 'New York',  cost: 3, smiles: 3 },
-    { name: 'Tokyo',     cost: 3, smiles: 3 },
-    { name: 'Bali',      cost: 3, smiles: 3 },
+    { name: 'New York',  cost: 2, smiles: 2 },
+    { name: 'Tokyo',     cost: 2, smiles: 2 },
+    { name: 'Bali',      cost: 1, smiles: 1 },
     { name: 'Maldives',  cost: 3, smiles: 3 },
-    { name: 'Patagonie', cost: 3, smiles: 3 },
+    { name: 'Patagonie', cost: 2, smiles: 2 },
   ]
   voyages.forEach(v => deck.push(card({ category: 'voyage', name: v.name, smiles: v.smiles, cost: v.cost })))
 
   // ── MAISONS (5) ──────────────────────────────────────────────────────────────
-  // Maison simple x2, Maison avec garage x2, Villa x1
   const maisons = [
-    { name: 'Maison simple',      cost: 6, costMarried: 3, smiles: 1 },
-    { name: 'Maison simple',      cost: 6, costMarried: 3, smiles: 1 },
-    { name: 'Maison avec garage', cost: 8, costMarried: 4, smiles: 2 },
-    { name: 'Maison avec garage', cost: 8, costMarried: 4, smiles: 2 },
-    { name: 'Villa',              cost: 10, costMarried: 5, smiles: 3 },
+    { name: 'Studio',        cost: 2, smiles: 2 },
+    { name: 'Appartement',   cost: 3, smiles: 3 },
+    { name: 'Maison',        cost: 4, smiles: 4 },
+    { name: 'Villa',         cost: 5, smiles: 5 },
+    { name: 'Manoir',        cost: 6, smiles: 6 },
   ]
-  maisons.forEach(m => deck.push(card({ category: 'maison', name: m.name, smiles: m.smiles, cost: m.cost, costMarried: m.costMarried })))
+  maisons.forEach(m => deck.push(card({ category: 'maison', name: m.name, smiles: m.smiles, cost: m.cost })))
 
   // ── MALUS (37) ───────────────────────────────────────────────────────────────
   repeat(5,  { category: 'malus', name: 'Accident',     smiles: 0, malusType: 'accident' }).forEach(c => deck.push(c))

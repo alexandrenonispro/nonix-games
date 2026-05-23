@@ -37,7 +37,7 @@ export function handleSmileLife(
       return
     }
     const code = room.code
-    const game = new SmileLifeGame(members)
+    const game = new SmileLifeGame(code, roomNS, members)
     activeGames.set(code, game)
     broadcast(game)
     broadcastLog(code, [`🃏 Smile Life commence !`])

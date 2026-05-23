@@ -1,5 +1,3 @@
-import { updatePlayerStats } from '../../lib/updateStats.js'
-import type { Namespace } from 'socket.io'
 import { buildDeck, shuffle, type Card, type MalusType } from './cards.js'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -37,9 +35,6 @@ export interface PlayerState {
 }
 
 export type ActionType =
-  | 'skip-turn'         // passer son tour (malus)
-  | 'arc-en-ciel-play'  // jouer une carte pendant arc-en-ciel
-  | 'arc-en-ciel-done'  // terminer arc-en-ciel et repiocher
   | 'draw'              // piocher dans la pioche
   | 'take-discard'      // prendre la dernière carte de la défausse
   | 'play-card'         // jouer une carte devant soi
@@ -72,7 +67,7 @@ export interface SmileLifeState {
 }
 
 export interface PendingAction {
-  type: 'pick-from-discard' | 'troc' | 'anniversaire' | 'arc-en-ciel' | 'chance' | 'tsunami' | 'vengeance' | 'astronaute' | 'chef-ventes' | 'journaliste' | 'medium' | 'piston' | 'buy-choice' | 'casino-bet-a' | 'casino-bet-b' | 'casino-reveal' | 'chercheur-discard'
+  type: 'pick-from-discard' | 'troc' | 'anniversaire' | 'arc-en-ciel' | 'chance' | 'tsunami' | 'vengeance' | 'astronaute' | 'chef-ventes' | 'journaliste' | 'medium' | 'piston' | 'buy-choice'
   initiatorId: string
   data?: any
 }
@@ -93,11 +88,7 @@ function studyLevel(board: PlayerBoard): number {
 }
 
 function salaryLiasses(board: PlayerBoard): number {
-  // Somme des valeurs en liasses des salaires non investis
-  const investedIds = new Set(board.salairesInvestis.map(s => s.id))
-  return board.salaires
-    .filter(s => !investedIds.has(s.id))
-    .reduce((sum, s) => sum + (s.salaryLevel ?? 1), 0)
+  return board.salaires.filter(s => !board.salairesInvestis.includes(s)).length
 }
 
 function isMarried(board: PlayerBoard): boolean {
@@ -128,7 +119,6 @@ export class SmileLifeGame {
     this.roomNS = roomNS
     const deck = shuffle(buildDeck())
     const hand5 = (d: Card[]) => d.splice(0, 5)
-
 
     const playerStates: PlayerState[] = players.map(p => ({
       id: p.id,
@@ -168,21 +158,9 @@ export class SmileLifeGame {
 
   getState(): SmileLifeState { return this.state }
 
-  // Taille de main maximale (6 pour chercheur, 5 sinon)
-  handSize(player: PlayerState): number {
-    return player.board.metier?.metierEffect === 'chercheur' ? 6 : 5
-  }
-
   getPublicState(forPlayerId: string) {
-    const pending = this.state.pendingAction
-    // Masquer la mise de A au joueur B (casino)
-    let maskedPending = pending
-    if (pending?.type === 'casino-bet-b' && pending.data?.betA && forPlayerId !== pending.data?.playerAId) {
-      maskedPending = { ...pending, data: { ...pending.data, betA: { id: 'hidden', name: '?', salaryLevel: '?' } } }
-    }
     return {
       ...this.state,
-      pendingAction: maskedPending,
       deck: this.state.deck.map(() => ({ id: 'hidden', category: 'hidden', name: '?', smiles: 0 })),
       players: this.state.players.map(p => ({
         ...p,
@@ -217,10 +195,8 @@ export class SmileLifeGame {
         }
         // Cas Grand Prof
         if (card.metierEffect === 'grand-prof') {
-          const isProf = b.metier && b.metier.name.toLowerCase().startsWith('prof')
-          if (!isProf) return { ok: false, reason: 'Grand Prof requiert d\'être Professeur.' }
-          // Grand Prof remplace directement le prof (pas besoin de démissionner)
-          return { ok: true }
+          const isProf = b.metier?.name.toLowerCase().includes('prof')
+          if (!isProf) return { ok: false, reason: 'Grand Prof requiert d\'être déjà Professeur.' }
         }
         return { ok: true }
       }
@@ -249,9 +225,9 @@ export class SmileLifeGame {
 
       case 'enfant': {
         if (!isMarried(b) && !b.adultere) {
-          // Un enfant possible si au moins un flirt camping/hôtel dans les flirts posés
-          const hasChildFlirt = b.flirts.some(f => f.allowsChild)
-          if (!hasChildFlirt) return { ok: false, reason: 'Mariez-vous ou ayez un flirt camping/hôtel.' }
+          // Enfant possible si flirt camping/hôtel non recouvert
+          const topFlirt = b.flirts[b.flirts.length - 1]
+          if (!topFlirt?.allowsChild) return { ok: false, reason: 'Mariez-vous ou ayez un flirt camping/hôtel.' }
           if (b.enfants.length >= 1) return { ok: false, reason: 'Un seul enfant sans mariage.' }
         }
         return { ok: true }
@@ -269,7 +245,7 @@ export class SmileLifeGame {
       case 'voyage':
       case 'maison': {
         const cost = card.cost ?? 0
-        const effectiveCost = (card.category === 'maison' && isMarried(b)) ? (card.costMarried ?? Math.ceil(cost / 2)) : cost
+        const effectiveCost = (card.category === 'maison' && isMarried(b)) ? Math.ceil(cost / 2) : cost
         const available = salaryLiasses(b) + b.heritage
         if (available < effectiveCost) return { ok: false, reason: `Salaires insuffisants (besoin : ${effectiveCost} liasses).` }
         return { ok: true }
@@ -278,47 +254,8 @@ export class SmileLifeGame {
       case 'malus':
         return { ok: true } // validé côté infliger
 
-      case 'special': {
-        if (card.specialType === 'casino') {
-          // Joueur A doit avoir un salaire en main
-          const hasSalaire = player.hand.some(c => c.category === 'salaire')
-          if (!hasSalaire) return { ok: false, reason: 'Vous devez avoir un salaire en main pour jouer le Casino.' }
-          // Au moins un adversaire doit avoir un salaire en main
-          const others = this.state.players.filter(p => p.id !== player.id)
-          const hasOpponent = others.some(p => p.hand.some(c => c.category === 'salaire'))
-          if (!hasOpponent) return { ok: false, reason: "Aucun adversaire n'a de salaire en main." }
-        }
-        if (card.specialType === 'vengeance') {
-          const b = player.board
-          if (b.malus.length === 0) {
-            return { ok: false, reason: 'Vous n\'avez reçu aucun malus à renvoyer.' }
-          }
-          // Vérifier qu'au moins un malus (hors attentat) peut être infligé à un autre joueur
-          const others = this.state.players.filter(p => p.id !== player.id)
-          const applicableMalus = b.malus.filter(m => {
-            if (m.malusType === 'attentat') return false
-            // Vérifier que ce malus peut s'appliquer à au moins un joueur
-            return others.some(target => {
-              const tb = target.board
-              if (m.malusType === 'maladie' && (tb.metier?.metierEffect === 'chirurgien' || tb.metier?.metierEffect === 'medecin' || tb.metier?.metierEffect === 'pharmacien')) return false
-              if (m.malusType === 'accident' && tb.metier?.metierEffect === 'garagiste') return false
-              if (m.malusType === 'divorce' && !tb.mariage) return false
-              if (m.malusType === 'divorce' && tb.metier?.metierEffect === 'avocat') return false
-              if (m.malusType === 'licenciement' && (tb.metier?.isFonctionnaire || tb.metier?.metierEffect === 'bandit')) return false
-              if (m.malusType === 'licenciement' && !tb.metier) return false
-              if (m.malusType === 'impot' && (!tb.metier || tb.salaires.length === 0 || tb.metier?.metierEffect === 'bandit')) return false
-              if (m.malusType === 'burnout' && !tb.metier) return false
-              if (m.malusType === 'redoublement' && tb.etudes.length === 0) return false
-              if (m.malusType === 'prison' && tb.metier?.metierEffect !== 'bandit') return false
-              return true
-            })
-          })
-          if (applicableMalus.length === 0) {
-            return { ok: false, reason: 'Aucun de vos malus ne peut être infligé à un autre joueur.' }
-          }
-        }
+      case 'special':
         return { ok: true }
-      }
 
       default:
         return { ok: false, reason: 'Carte inconnue.' }
@@ -337,66 +274,6 @@ export class SmileLifeGame {
     if (playerIndex !== s.currentPlayerIndex) return { ok: false, reason: 'Ce n\'est pas votre tour.' }
 
     const events: string[] = []
-
-    // ── PASSER SON TOUR ─────────────────────────────────────────────────────
-    if (action.type === 'skip-turn') {
-      if (player.skippedTurns === 0 && player.prisonTurns === 0) return { ok: false, reason: 'Vous n\'avez pas de tour à passer.' }
-      return this.skipTurn(player, playerIndex, events)
-    }
-
-    // ── ARC-EN-CIEL ─────────────────────────────────────────────────────────
-    if (action.type === 'arc-en-ciel-play') {
-      const pending = s.pendingAction
-      if (!pending || pending.type !== 'arc-en-ciel' || pending.initiatorId !== playerId) {
-        return { ok: false, reason: "Pas d'Arc-en-ciel en cours." }
-      }
-      const remaining = pending.data?.remaining ?? 0
-      if (remaining <= 0) return { ok: false, reason: 'Plus de cartes à jouer.' }
-      const card = player.hand.find(c => c.id === action.cardId)
-      if (!card) return { ok: false, reason: 'Carte introuvable.' }
-
-      // Retirer la carte de la main
-      player.hand = player.hand.filter(c => c.id !== action.cardId)
-
-      if (action.payload?.discard) {
-        // Défausser
-        s.discard.push(card)
-        events.push(`${player.username} défausse ${card.name} (Arc-en-ciel).`)
-      } else if (card.category === 'malus') {
-        // Malus : cibler un adversaire
-        const target = s.players.find(p => p.id === action.targetPlayerId)
-        if (target) this.applyMalus(target, card, player, events)
-        else { player.hand.push(card); return { ok: false, reason: 'Cible invalide.' } }
-      } else {
-        // Jouer la carte normalement
-        this.applyCard(player, card, events, action.payload)
-      }
-
-      pending.data.remaining -= 1
-      if (pending.data.remaining === 0) {
-        // Passer en phase redraw
-        pending.data.phase = 'redraw'
-        events.push(`${player.username} a joué ses 3 cartes — repioche maintenant.`)
-      } else {
-        events.push(`Arc-en-ciel : encore ${pending.data.remaining} carte(s) jouable(s).`)
-      }
-      return { ok: true, events }
-    }
-
-    if (action.type === 'arc-en-ciel-done') {
-      const pending = s.pendingAction
-      if (!pending || pending.type !== 'arc-en-ciel') return { ok: false, reason: "Pas d'Arc-en-ciel en cours." }
-      // Repiocher jusqu'à la main max (5 ou 6 pour chercheur)
-      const maxHand = this.handSize(player)
-      while (player.hand.length < maxHand && s.deck.length > 0) {
-        player.hand.push(s.deck.shift()!)
-      }
-      s.pendingAction = null
-      player.hasActed = true
-      events.push(`${player.username} repioche (${player.hand.length} cartes) et termine l'Arc-en-ciel.`)
-      this.nextTurn(events)
-      return { ok: true, events }
-    }
 
     // ── PIOCHER ─────────────────────────────────────────────────────────────
     if (action.type === 'draw') {
@@ -432,23 +309,17 @@ export class SmileLifeGame {
     if (action.type === 'resign') {
       if (!player.board.metier) return { ok: false, reason: 'Vous n\'avez pas de métier.' }
       const isInterim = player.board.metier.statut === 'interimaire'
-      // Non-intérimaire : doit démissionner AVANT de piocher et passe son tour
       if (!isInterim && player.hasDrawn) return { ok: false, reason: 'Démissionnez avant de piocher.' }
-      const wasChercheur = player.board.metier.metierEffect === 'chercheur'
       s.discard.push(player.board.metier)
       events.push(`${player.username} a démissionné de ${player.board.metier.name}.`)
       player.board.metier = null
-      // Les salaires sont conservés après démission
-      // Si était chercheur et a 6 cartes, doit en défausser une
-      if (wasChercheur && player.hand.length > 5) {
-        s.pendingAction = { type: 'chercheur-discard', initiatorId: player.id }
-        events.push(`${player.username} doit défausser une carte (retour à 5 cartes max).`)
-      }
+      player.board.salaires = [] // perd ses salaires
       if (!isInterim) {
         player.hasDismissed = true
-        if (!s.pendingAction) this.nextTurn(events)
+        this.nextTurn(events)
+      } else {
+        player.hasDrawn = true // intérimaire peut continuer
       }
-      // Intérimaire : peut démissionner avant ou après avoir pioché, joue normalement
       return { ok: true, events }
     }
 
@@ -483,7 +354,7 @@ export class SmileLifeGame {
       player.hasActed = true
 
       // Fin de tour si main = 5 cartes
-      if (player.hand.length >= this.handSize(player)) this.nextTurn(events)
+      if (player.hand.length === 5) this.nextTurn(events)
       return { ok: true, events }
     }
 
@@ -503,7 +374,7 @@ export class SmileLifeGame {
         return result
       }
       player.hasActed = true
-      if (player.hand.length >= this.handSize(player)) this.nextTurn(events)
+      if (player.hand.length === 5) this.nextTurn(events)
       return { ok: true, events }
     }
 
@@ -519,6 +390,11 @@ export class SmileLifeGame {
       events.push(`${player.username} a défaussé ${card.name}.`)
       this.nextTurn(events)
       return { ok: true, events }
+    }
+
+    // ── PASSER SON TOUR (malus en cours) ────────────────────────────────────
+    if (action.type === 'skip-turn') {
+      return this.skipTurn(player, playerIndex, events)
     }
 
     return { ok: false, reason: 'Action inconnue.' }
@@ -537,13 +413,10 @@ export class SmileLifeGame {
 
       case 'metier':
         if (card.metierEffect === 'grand-prof') {
-          if (b.metier) {
-            events.push(`${player.username} upgrade ${b.metier.name} → Grand Prof !`)
-            this.state.discard.push(b.metier)
-            // Les salaires déjà posés sont conservés
-          }
+          if (b.metier) this.state.discard.push(b.metier)
         }
         b.metier = card
+        b.salaires = []
         events.push(`${player.username} est maintenant ${card.name} !`)
         this.applyMetierEffect(player, card, events, payload)
 
@@ -554,6 +427,7 @@ export class SmileLifeGame {
               events.push(`${p.username} doit défausser son ${p.board.metier!.name} à cause du Policier !`)
               this.state.discard.push(p.board.metier!)
               p.board.metier = null
+              p.board.salaires = []
             }
           })
         }
@@ -579,9 +453,6 @@ export class SmileLifeGame {
         })
         targetFlirts.push(card)
         events.push(`${player.username} a flirté ${card.lieu}.`)
-        if (card.allowsChild && !isMarried(b)) {
-          events.push(`💡 ${player.username} peut avoir un enfant grâce à ce flirt (${card.lieu}) !`)
-        }
         break
       }
 
@@ -609,28 +480,19 @@ export class SmileLifeGame {
       case 'voyage':
       case 'maison': {
         const cost = card.cost ?? 0
-        const effectiveCost = (card.category === 'maison' && isMarried(b)) ? (card.costMarried ?? Math.ceil(cost / 2)) : cost
+        const effectiveCost = (card.category === 'maison' && isMarried(b)) ? Math.ceil(cost / 2) : cost
         let remaining = effectiveCost
         // Dépenser l'héritage en premier
         const heritageUsed = Math.min(b.heritage, remaining)
         b.heritage -= heritageUsed
         remaining -= heritageUsed
-        // Consommer des salaires par valeur (salaryLevel) jusqu'à couvrir le coût
-        // Trier du plus grand au plus petit pour minimiser les cartes utilisées
-        const salairesDisponibles = [...b.salaires].sort((a, b) => (b.salaryLevel ?? 1) - (a.salaryLevel ?? 1))
-        const toInvest: Card[] = []
-        for (const sal of salairesDisponibles) {
-          if (remaining <= 0) break
-          toInvest.push(sal)
-          remaining -= (sal.salaryLevel ?? 1)
-        }
-        // Retirer les cartes investies de la main
-        const investedIds = new Set(toInvest.map(s => s.id))
-        b.salaires = b.salaires.filter(s => !investedIds.has(s.id))
+        // Retourner les salaires
+        const toInvest = b.salaires.slice(-remaining)
         b.salairesInvestis.push(...toInvest)
+        b.salaires = b.salaires.slice(0, -remaining)
         if (card.category === 'voyage') b.voyages.push(card)
         else b.maisons.push(card)
-        events.push(`${player.username} a acheté : ${card.name} ! (${toInvest.length} salaire(s) investis)`)
+        events.push(`${player.username} a acheté : ${card.name} !`)
         break
       }
 
@@ -662,12 +524,9 @@ export class SmileLifeGame {
         this.state.pendingAction = { type: 'journaliste', initiatorId: player.id }
         events.push(`${player.username} (Journaliste) peut voir les mains des autres !`)
         break
-      case 'medium': {
-        const next13 = this.state.deck.slice(0, 13)
-        this.state.pendingAction = { type: 'medium', initiatorId: player.id, data: { cards: next13 } }
-        events.push(`${player.username} (Médium) consulte les 13 prochaines cartes de la pioche !`)
-        break
-      }
+      case 'medium':
+        this.state.pendingAction = { type: 'medium', initiatorId: player.id }
+        events.push(`${player.username} (Médium) peut voir les 13 prochaines cartes !`)
         break
     }
   }
@@ -712,17 +571,10 @@ export class SmileLifeGame {
         events.push(`${player.username} reçoit un héritage (3 liasses disponibles) !`)
         break
 
-      case 'piston': {
-        // Chercher les métiers dans la main du joueur
-        const metiersInHand = player.hand.filter(c => c.category === 'metier' && c.metierEffect !== 'grand-prof')
-        if (metiersInHand.length === 0) {
-          events.push(`${player.username} joue Piston mais n'a aucun métier en main !`)
-        } else {
-          s.pendingAction = { type: 'piston', initiatorId: player.id, data: { metiers: metiersInHand } }
-          events.push(`${player.username} joue Piston ! Choisissez un métier de votre main.`)
-        }
-        break
-      }
+      case 'piston':
+        // Poser n'importe quel métier
+        s.pendingAction = { type: 'piston', initiatorId: player.id }
+        events.push(`${player.username} joue Piston ! Choisissez un métier.`)
         break
 
       case 'troc':
@@ -746,41 +598,11 @@ export class SmileLifeGame {
         break
 
       case 'casino':
-        s.pendingAction = {
-          type: 'casino-bet-a',
-          initiatorId: player.id,
-          data: {
-            playerAId: player.id,
-            // Salaires disponibles en main pour A
-            salaireOptions: player.hand.filter(c => c.category === 'salaire'),
-            // Adversaires ayant au moins 1 salaire en main
-            eligibleOpponents: s.players
-              .filter(p => p.id !== player.id && p.hand.some(c => c.category === 'salaire'))
-              .map(p => ({ id: p.id, username: p.username, avatarUrl: p.avatarUrl })),
-          }
-        }
-        events.push(`${player.username} joue Casino ! Choisissez un salaire et un adversaire.`)
+        // Placer casino avec un salaire par dessus
+        s.pendingAction = { type: 'pick-from-discard', initiatorId: player.id, data: { casino: true } }
+        events.push(`${player.username} ouvre un Casino ! Misez un salaire.`)
         break
     }
-  }
-
-  // Wrapper public pour canPlayCard (utilisé dans handlers)
-  canPlayCardPublic(player: PlayerState, card: Card) {
-    return this.canPlayCard(player, card)
-  }
-
-  // Wrapper public pour applyCard (Chance, Étoile filante, Astronaute)
-  applyCardPublic(player: PlayerState, card: Card, events: string[], payload?: any) {
-    this.applyCard(player, card, events, payload)
-    player.hasActed = true
-    // nextTurn appelé uniquement si la main est pleine (flow normal)
-    // Sinon le joueur voit hasActed=true mais peut encore jouer via les cartes
-    // Le nextTurn sera déclenché par le prochain state broadcast
-  }
-
-  // Wrapper public pour vengeance/astronaute
-  applyMalusPublic(target: PlayerState, card: Card, attacker: PlayerState, events: string[]) {
-    return this.applyMalus(target, card, attacker, events)
   }
 
   // ── Application des malus ───────────────────────────────────────────────────
@@ -796,9 +618,6 @@ export class SmileLifeGame {
     if (type === 'accident' && b.metier?.metierEffect === 'garagiste') {
       return { ok: false, reason: `${target.username} est immunisé contre les accidents.` }
     }
-    if (type === 'divorce' && !b.mariage) {
-      return { ok: false, reason: `${target.username} n'est pas marié(e).` }
-    }
     if (type === 'divorce' && b.metier?.metierEffect === 'avocat') {
       return { ok: false, reason: `${target.username} ne peut pas subir de divorce forcé.` }
     }
@@ -807,12 +626,6 @@ export class SmileLifeGame {
     }
     if (type === 'licenciement' && b.metier?.metierEffect === 'bandit') {
       return { ok: false, reason: `${target.username} (Bandit) ne peut pas être licencié.` }
-    }
-    if (type === 'impot' && !isWorker(b)) {
-      return { ok: false, reason: `${target.username} ne travaille pas (Impôt inapplicable).` }
-    }
-    if (type === 'impot' && b.salaires.length === 0) {
-      return { ok: false, reason: `${target.username} n'a aucun salaire posé.` }
     }
     if (type === 'impot' && b.metier?.metierEffect === 'bandit') {
       return { ok: false, reason: `${target.username} (Bandit) ne paie pas d'impôts.` }
@@ -828,16 +641,12 @@ export class SmileLifeGame {
     }
     if (type === 'attentat') {
       const hasMilitaire = this.state.players.some(p => p.board.metier?.metierEffect === 'militaire')
-      if (hasMilitaire) return { ok: false, reason: `Un Militaire est en jeu. L\'attentat est bloqué.` }
-      const totalChildren = this.state.players.reduce((sum, p) => sum + p.board.enfants.length + p.board.enfantsAdultere.length, 0)
-      if (totalChildren === 0) return { ok: false, reason: 'L\'attentat nécessite au moins un enfant en jeu.' }
+      if (hasMilitaire) return { ok: false, reason: `Un Militaire est en jeu. L'attentat est bloqué.` }
     }
 
     // Appliquer
     target.board.malus.push(card)
-    const malusMsg = `💥 ${attacker.username} inflige ${card.name} à ${target.username} !`
-    events.push(malusMsg)
-    this.log(malusMsg)
+    events.push(`💥 ${attacker.username} inflige un ${card.name} à ${target.username} !`)
 
     switch (type) {
       case 'accident':
@@ -862,19 +671,16 @@ export class SmileLifeGame {
       case 'divorce':
         if (b.mariage) {
           if (b.adultere) {
-            // Perd adultère + enfants adultère + flirts adultère
             this.state.discard.push(b.adultere)
             b.adultere = null
-            b.enfantsAdultere.forEach(e => this.state.discard.push(e))
+            b.enfants.push(...b.enfantsAdultere)
             b.enfantsAdultere = []
-            b.flirtsAdultere.forEach(f => this.state.discard.push(f))
-            b.flirtsAdultere = []
-            events.push(`${target.username} perd son adultère, ses enfants et flirts d'adultère.`)
           }
           this.state.discard.push(b.mariage)
           b.mariage = null
-          // Les flirts officiels (avant mariage) sont conservés
-          events.push(`${target.username} divorce (forcé) ! Mariage perdu.`)
+          b.enfants.forEach(e => this.state.discard.push(e))
+          b.enfants = []
+          events.push(`${target.username} divorce ! Mariage et enfants perdus.`)
         }
         break
 
@@ -888,15 +694,10 @@ export class SmileLifeGame {
 
       case 'licenciement':
         if (b.metier) {
-          const wasChercheurl = b.metier.metierEffect === 'chercheur'
           this.state.discard.push(b.metier)
           b.metier = null
-          // Les salaires sont conservés après licenciement
+          b.salaires = []
           events.push(`${target.username} est licencié(e) !`)
-          if (wasChercheurl && target.hand.length > 5) {
-            this.state.pendingAction = { type: 'chercheur-discard', initiatorId: target.id }
-            events.push(`${target.username} doit défausser une carte (retour à 5 cartes max).`)
-          }
         }
         break
 
@@ -1004,6 +805,6 @@ export class SmileLifeGame {
 
   private log(msg: string) {
     this.state.log.push(msg)
-    if (this.state.log.length > 500) this.state.log.shift()
+    if (this.state.log.length > 100) this.state.log.shift()
   }
 }
